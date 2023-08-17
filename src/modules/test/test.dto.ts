@@ -1,4 +1,4 @@
-import {IsDefined, IsString, MinLength} from "class-validator";
+import { IsDefined, IsString, MinLength } from "class-validator";
 
 export class TestDto {
   @MinLength(3)

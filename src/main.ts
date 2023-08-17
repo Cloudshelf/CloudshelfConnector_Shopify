@@ -1,8 +1,8 @@
 import "reflect-metadata";
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 import express from "express";
 import validate from "./utils/request-validator";
-import {TestDto} from "./modules/test/test.dto";
+import { TestDto } from "./modules/test/test.dto";
 
 dotenv.config();
 
@@ -15,7 +15,6 @@ app.use(express.urlencoded({ extended: true }));
 app.post("/", validate(TestDto), (req, res) => {
   res.send("Hello world.");
 });
-
 
 app.listen(port, () => {
   console.log(`🚀 Server running on port ${port}`);

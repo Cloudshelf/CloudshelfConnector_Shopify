@@ -9,7 +9,8 @@
   },
   "scripts": {
     "dev": "nodemon src/main.ts",
-    "codegen:cloudshelf": "graphql-codegen --config src/graphql/cloudshelf/codegen.ts"
+    "codegen:cloudshelf": "graphql-codegen --config src/graphql/cloudshelf/codegen.ts",
+    "codegen:shopify": "graphql-codegen --config src/graphql/shopify/codegen.ts"
   },
   "author": "Julian Forrester (TreeOfLearning)",
   "license": "SEE LICENSE IN LICENSE",

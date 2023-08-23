@@ -1,12 +1,6 @@
 import { injectable } from "tsyringe";
 import { createClient, RedisClientType } from "redis";
 import { DelayedError, Processor, Queue, Worker } from "bullmq";
-import { CloudshelfClient } from "../cloudshelfClient/CloudshelfClient";
-import {
-  TestDocument,
-  TestQuery,
-  TestQueryVariables,
-} from "../../graphql/cloudshelf/generated/cloudshelf";
 
 @injectable()
 export class QueueService {
@@ -15,24 +9,11 @@ export class QueueService {
   private queues: { [key: string]: Queue };
   private workers: { [key: string]: Worker };
 
-  constructor(private readonly cloudshelf: CloudshelfClient) {
+  constructor() {
     this.redis = createClient();
     void this.redis.connect();
     this.queues = {};
     this.workers = {};
-    const cli = cloudshelf.getClient();
-    console.log("CLI", cli);
-    cli
-      .query<TestQuery, TestQueryVariables>({
-        query: TestDocument,
-        variables: {},
-      })
-      .then((res) => {
-        console.log("RES", res);
-      })
-      .catch((err) => {
-        console.log("ERR", err);
-      });
   }
 
   async registerQueue(

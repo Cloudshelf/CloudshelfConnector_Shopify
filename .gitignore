@@ -129,5 +129,11 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# Jetbrains
 .idea
+
+# Environment variables
 .env*
+
+# GraphQL Schemas - for development only
+*.schema.json

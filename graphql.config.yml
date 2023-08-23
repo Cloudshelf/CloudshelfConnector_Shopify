@@ -1,0 +1,5 @@
+projects:
+  cloudshelf:
+    schema: src/graphql/cloudshelf/generated/cloudshelf.schema.json
+    documents: src/graphql/cloudshelf/**/*.graphql
+

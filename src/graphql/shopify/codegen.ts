@@ -27,7 +27,7 @@ const config: CodegenConfig = {
       plugins: ["introspection"],
     },
   },
-  //documents: "src/graphql/shopify/**/*.graphql",
+  documents: "src/graphql/shopify/**/*.graphql",
 };
 
 export default config;

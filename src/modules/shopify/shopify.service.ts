@@ -12,6 +12,7 @@ export class ShopifyService {
     this.sessionStorage = new MemorySessionStorage();
     this.shopify = shopifyApp({
       api: {
+        isEmbeddedApp: true,
         apiKey: process.env.SHOPIFY_API_KEY!,
         apiSecretKey: process.env.SHOPIFY_API_SECRET_KEY!,
         scopes: [
@@ -39,7 +40,9 @@ export class ShopifyService {
         ],
         hostScheme: "https",
         hostName: process.env.HOSTNAME!,
+
       },
+
       auth: {
         path: "/app/auth",
         callbackPath: "/app/auth/callback",
@@ -49,10 +52,13 @@ export class ShopifyService {
       },
       exitIframePath: "/app/exitiframe",
       sessionStorage: this.sessionStorage,
+      useOnlineTokens: false,
+
     });
   }
 
   async getSession(id: string) {
+
     const sessions = this.sessionStorage.findSessionsByShop(
       "cs-connector.myshopify.com",
     );

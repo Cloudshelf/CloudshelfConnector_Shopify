@@ -26,12 +26,21 @@ dotenv.config();
   const databaseService = container.resolve(DatabaseService);
   await databaseService.initialise();
 
-  const { shopify } = container.resolve(ShopifyService);
+  const shopifyService = container.resolve(ShopifyService);
+  const shopify = shopifyService.shopify;
   console.log("Auth path:", shopify.config.auth.path);
   app.get(shopify.config.auth.path, shopify.auth.begin());
   app.get(
     shopify.config.auth.callbackPath,
+    (req: Request, res: Response, next: NextFunction) => {
+      console.log("Before callback");
+      next();
+    },
     shopify.auth.callback(),
+    (req: Request, res: Response, next: NextFunction) => {
+      console.log("After callback");
+      next();
+    },
     shopify.redirectToShopifyOrAppRoot(),
   );
   /*app.post(
@@ -47,7 +56,11 @@ dotenv.config();
     //res.send("Exit iframe");
     const params = req.query;
     const redirectUri = (params["redirectUri"] ?? "") as string;
-    console.log("Exiting iframe to: " + redirectUri);
+    console.log(
+      "Exiting iframe to: " +
+        redirectUri +
+        " (debug - you will need to click the link manually the first time each time you restart this app because of in memory storage)",
+    );
     //res.redirect(redirectUri);
     res.end(
       '<html><body><p>Redirecting...</p><script>window.open("' +
@@ -67,23 +80,38 @@ dotenv.config();
     target: "https://development.manager.cloudshelf.ai",
     changeOrigin: true,
     pathFilter: ["**", "!/app/**", "!/exitiframe**"],
-    /*pathRewrite: (path, req) => {
-      /!*return path
-        .replace("embedded=1", "")
-        .replace("hmac", "hhmac")
-        .replace("session", "sesssssion")
-        .replace("shop", "shhhop");*!/
-    },*/
     logger: console,
   });
-  app.use((req, res, next) => {
-    console.log("PATH", req.path);
-    if (req.path.startsWith("/_next") || !req.params["shop"]) {
+  app.use(
+    (req, res, next) => {
+      console.log("PATH", req.path);
+      const session = req.query["session"] as string;
+      const shop = req.query["shop"] as string;
+      console.log("SHOP", shop);
+      if (req.path.startsWith("/_next") || !shop) {
+        // Skip authentication for next.js files or (temporarily - debug) if no shop is specified
+        apiProxy(req, res, next);
+        return;
+      }
+
+      console.log("next");
+
+      shopify.api.session
+        .getCurrentId({
+          rawResponse: res,
+          rawRequest: req,
+          isOnline: true, // also doesnt work with false :)
+        })
+        .then((id) => console.log("Session id: ", id));
+      shopifyService
+        .getSession(session)
+        .then((sess) => console.log("Session: ", sess));
+
       next();
-      return;
-    }
-    return shopify.ensureInstalledOnShop()(req, res, next);
-  }, apiProxy);
+    },
+    shopify.ensureInstalledOnShop(),
+    apiProxy,
+  );
 
   app.listen(port, () => {
     console.log(`🚀 Server running on port ${port}`);

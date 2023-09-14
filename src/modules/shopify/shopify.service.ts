@@ -1,15 +1,19 @@
 import { ShopifyApp, shopifyApp } from "@shopify/shopify-app-express";
 import { injectable } from "tsyringe";
 import { MemorySessionStorage } from "@shopify/shopify-app-session-storage-memory";
+import "@shopify/shopify-api/adapters/node";
+import { shopifyApi } from "@shopify/shopify-api";
 
 @injectable()
 export class ShopifyService {
   public readonly shopify: ShopifyApp;
+  private readonly sessionStorage: MemorySessionStorage;
   constructor() {
+    this.sessionStorage = new MemorySessionStorage();
     this.shopify = shopifyApp({
       api: {
-        apiKey: "5b9fc2160c647e271c1c549f6470bea1",
-        apiSecretKey: "f719dfa8c715421617b9ac87d6527925",
+        apiKey: process.env.SHOPIFY_API_KEY!,
+        apiSecretKey: process.env.SHOPIFY_API_SECRET_KEY!,
         scopes: [
           "unauthenticated_read_product_listings",
           "unauthenticated_read_product_tags",
@@ -34,7 +38,7 @@ export class ShopifyService {
           "write_discounts",
         ],
         hostScheme: "https",
-        hostName: `fountain-jelsoft-incident-mentioned.trycloudflare.com`,
+        hostName: process.env.HOSTNAME!,
       },
       auth: {
         path: "/app/auth",
@@ -44,7 +48,15 @@ export class ShopifyService {
         path: "/app/webhooks",
       },
       exitIframePath: "/app/exitiframe",
-      sessionStorage: new MemorySessionStorage(),
+      sessionStorage: this.sessionStorage,
     });
+  }
+
+  async getSession(id: string) {
+    const sessions = this.sessionStorage.findSessionsByShop(
+      "cs-connector.myshopify.com",
+    );
+    console.log("Sessions for store:", await sessions);
+    return this.sessionStorage.loadSession(id);
   }
 }

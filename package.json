@@ -46,6 +46,7 @@
     "@mikro-orm/core": "^5.7.14",
     "@mikro-orm/migrations": "^5.7.14",
     "@mikro-orm/postgresql": "^5.7.14",
+    "@shopify/shopify-api": "^7.6.0",
     "@shopify/shopify-app-express": "^2.2.2",
     "@shopify/shopify-app-session-storage-memory": "^1.0.11",
     "body-parser": "^1.20.2",

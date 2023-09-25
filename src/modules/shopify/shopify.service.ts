@@ -1,15 +1,23 @@
 import { ShopifyApp, shopifyApp } from "@shopify/shopify-app-express";
 import { injectable } from "tsyringe";
-import { MemorySessionStorage } from "@shopify/shopify-app-session-storage-memory";
+import { RedisSessionStorage } from "@shopify/shopify-app-session-storage-redis";
 import "@shopify/shopify-api/adapters/node";
 import { shopifyApi } from "@shopify/shopify-api";
+import { SessionStorage } from "@shopify/shopify-app-session-storage";
 
 @injectable()
 export class ShopifyService {
   public readonly shopify: ShopifyApp;
-  private readonly sessionStorage: MemorySessionStorage;
+  private readonly sessionStorage: SessionStorage;
   constructor() {
-    this.sessionStorage = new MemorySessionStorage();
+    this.sessionStorage = RedisSessionStorage.withCredentials(
+      process.env.REDIS_HOST!,
+      parseInt(process.env.SESSION_DB!),
+      process.env.REDIS_USERNAME!,
+      process.env.REDIS_PASSWORD!,
+      {},
+    );
+
     this.shopify = shopifyApp({
       api: {
         isEmbeddedApp: true,
@@ -40,7 +48,6 @@ export class ShopifyService {
         ],
         hostScheme: "https",
         hostName: process.env.HOSTNAME!,
-
       },
 
       auth: {
@@ -51,18 +58,24 @@ export class ShopifyService {
         path: "/app/webhooks",
       },
       exitIframePath: "/app/exitiframe",
+      // @ts-ignore - Shopify's library types do not match...
       sessionStorage: this.sessionStorage,
       useOnlineTokens: false,
-
     });
   }
 
   async getSession(id: string) {
-
     const sessions = this.sessionStorage.findSessionsByShop(
-      "cs-connector.myshopify.com",
+      "cs-connector-store.myshopify.com",
     );
     console.log("Sessions for store:", await sessions);
     return this.sessionStorage.loadSession(id);
+  }
+
+  async deleteAllSessions(shop: string) {
+    const sessions = await this.sessionStorage.findSessionsByShop(shop);
+    for (const session of sessions) {
+      await this.sessionStorage.deleteSession(session.id);
+    }
   }
 }

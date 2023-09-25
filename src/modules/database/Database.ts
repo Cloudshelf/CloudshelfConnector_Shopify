@@ -11,6 +11,7 @@ export class DatabaseService {
 
   constructor() {}
   async initialise() {
+    console.log("Initialising database");
     if (this.initialised) {
       return;
     }

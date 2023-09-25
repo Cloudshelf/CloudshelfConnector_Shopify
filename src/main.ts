@@ -10,6 +10,7 @@ import { createExpressServer } from "routing-controllers";
 import { ShopifyStoreController } from "./modules/shopifyStore/shopify-store.controller";
 import { DebugController } from "./modules/debug/debug.controller";
 import { ShopifyService } from "./modules/shopify/shopify.service";
+import { ShopifyStoreService } from "./modules/shopifyStore/shopify-store.service";
 
 dotenv.config();
 
@@ -28,22 +29,23 @@ dotenv.config();
   const shopifyService = container.resolve(ShopifyService);
   const shopify = shopifyService.shopify;
 
-
   console.log("Auth path:", shopify.config.auth.path);
   app.get(shopify.config.auth.path, shopify.auth.begin());
   app.get(
     shopify.config.auth.callbackPath,
-      (req: Request, res: Response, next: NextFunction) => {
-          console.log("Before callback");
-          next();
-      },
+    (req: Request, res: Response, next: NextFunction) => {
+      console.log("Before callback");
+      next();
+    },
     shopify.auth.callback(),
-      (req: Request, res: Response, next: NextFunction) => {
-          console.log("After callback");
+    (req: Request, res: Response, next: NextFunction) => {
+      console.log("After callback");
 
-          //after callback, direct to a page that does an authenticated fetch.
-          res.redirect("https://admin.shopify.com/store/cs-connector-store/apps/cloudshelf-connector-ash/app/auth/fetch");
-      },
+      //after callback, direct to a page that does an authenticated fetch.
+      res.redirect(
+        `https://admin.shopify.com/store/cs-connector-store/apps/${process.env.APP_SLUG}/app/auth/fetch`,
+      );
+    },
     //requestBilling
     shopify.redirectToShopifyOrAppRoot(),
   );
@@ -53,88 +55,136 @@ dotenv.config();
     shopify.processWebhooks({ webhookHandlers }),
   );*/
 
-    //I tried to get this to work, the Auth JWT is in the request, but getSession returns null (session does work tho)
-    app.get("/shopify/cb",
-    async (req, res, next) => {
-    console.log('cb')
-
-
-    // console.log(req);
+  app.get("/shopify/cb", async (req, res, next) => {
     const sessionId = await shopify.api.session.getCurrentId({
-        isOnline: false,
-        rawRequest: req,
-        rawResponse: res,
+      isOnline: false,
+      rawRequest: req,
+      rawResponse: res,
     });
-    console.log('SessionId 2', sessionId);
 
     if (sessionId) {
-        const session = await shopifyService.getSession(sessionId);
-
-        console.log('SESSION 2: ', session);
+      const session = await shopifyService.getSession(sessionId);
+      if (!session || !session.shop || !session.accessToken) {
+        return;
+      }
+      // Store access token!
+      const storeService = container.resolve(ShopifyStoreService);
+      const store = await storeService.findStoreByDomain(
+        databaseService.getOrm(),
+        session?.shop ?? "",
+      );
+      if (!store) {
+        await storeService.createStore(
+          databaseService.getOrm(),
+          session.shop,
+          session.accessToken,
+        );
+      }
     }
 
     res.end(`cb`);
-});
+  });
 
-
-app.get("/app/auth/fetch", async (req, res) => {
+  app.get("/app/auth/fetch", async (req, res) => {
     res.end(`
         <html>
             <head>
-                <meta name="shopify-api-key" content="f523d26314100500673f6dc5cf12cba0" />
+                <meta name="shopify-api-key" content="${process.env.SHOPIFY_API_KEY}" />
                 <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js" ></script>
-                <script>
+                <script> 
                     //use app bridge to show loading
-                    shopify.loading(true);
+                    shopify.loading(false); 
                     //use app bright to call a request at the connector
                     //We have to then fetch something
                     //fetch is a global thing created by the app bridge, and it includes the auth headers that sessions apparently need.
-                    fetch('https://connector.yacker.io/shopify/cb');
-                    
-                    //after a successful fetch, we can we are done?
+                    fetch('https://cs.arcanaeum.me/shopify/cb');
                 </script>
+                <style>
+                    body {
+                        padding: 24px;
+                        font-family: sans-serif;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 24px;
+                        align-items: center;
+                    }
+                    button {
+                        border-radius: 35px;
+                        border: 1px solid #ec516c;
+                        background: #ec516c;
+                        color: #fff;
+                        padding: 8px;
+                        width: 350px;
+                        margin-top: 30px;
+                        cursor: pointer;
+                        transition: background .8s;
+                        margin-bottom: 8px;
+                        font-weight: 700; 
+                    }
+                    button:hover {
+                        background: #ec6e62 radial-gradient(circle,transparent 1%,#ec6e62 0) 50%/15000%;
+                        transition: background .8s;
+                    }
+                    button:active {
+                        background-color: #ec8f56;
+                        background-size: 100%;
+                    }
+                </style>
             </head>
             <body>
-                <p>authed fetch<p/>
+                <img src="https://development.manager.cloudshelf.ai/img/cloudshelf_long_logo.svg" alt="Cloudshelf" width="243px"/>
+                <button onclick="top.location.href = 'https://admin.shopify.com/store/cs-connector-store/apps/${process.env.APP_SLUG}/'">Continue to Cloudshelf</button>
             </body>
         </html>
       `);
-});
+  });
 
   app.get("/app/exitiframe", (req, res) => {
     const params = req.query;
     const redirectUri = (params["redirectUri"] ?? "") as string;
-      const fullUrl = `${redirectUri}`;
-      //if not embedded, we need to provide more of the url
-      // const fullUrl = `https://connector.yacker.io/${redirectUri}`;
-    console.log(
-      "Exiting iframe to: " +
-        fullUrl +
-        " (debug - you will need to click the link manually the first time each time you restart this app because of in memory storage)",
-    );
+    const fullUrl = `${redirectUri}`;
 
-      res.end(`
+    res.end(`
         <html>
-<!--            <head>-->
-<!--                <meta name="shopify-api-key" content="f523d26314100500673f6dc5cf12cba0" />-->
-<!--                <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js" ></script>-->
-<!--                <script>-->
-<!--                    //use app bridge to show loading-->
-<!--                    shopify.loading(true);-->
-<!--                    //use app bright to call a request at the connector-->
-<!--                    //We have to then fetch something-->
-<!--                    //fetch is a global thing created by the app bridge, and it includes the auth headers that sessions apparently need.-->
-<!--                    fetch('https://connector.yacker.io/shopify/cb');-->
-<!--                </script>-->
-<!--            </head>-->
-<!--            <script>window.location.href = '${fullUrl}'</script>-->
+            <head>
+                <style>
+                    body {
+                        padding: 24px;
+                        font-family: sans-serif;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 24px;
+                        align-items: center;
+                    }
+                    button {
+                        border-radius: 35px;
+                        border: 1px solid #ec516c;
+                        background: #ec516c;
+                        color: #fff;
+                        padding: 8px;
+                        width: 350px;
+                        margin-top: 30px;
+                        cursor: pointer;
+                        transition: background .8s;
+                        margin-bottom: 8px;
+                        font-weight: 700; 
+                    }
+                    button:hover {
+                        background: #ec6e62 radial-gradient(circle,transparent 1%,#ec6e62 0) 50%/15000%;
+                        transition: background .8s;
+                    }
+                    button:active {
+                        background-color: #ec8f56;
+                        background-size: 100%;
+                    }
+                </style>
+            </head>
             <body>
-                <p>You need to oauth: ${fullUrl}, and then fetch with authedFetch<p/>
+                <img src="https://development.manager.cloudshelf.ai/img/cloudshelf_long_logo.svg" alt="Cloudshelf" width="243px"/>
+                <button onclick="top.location.href = '${fullUrl}'">Authorize Cloudshelf</button>
             </body>
         </html>
       `);
-
-      // res.end(`<html><body><p>Redirecting to ${fullUrl}</p><script>window.location.href = '${fullUrl}'</script></body></html>`);
   });
 
   app.use((req, res, next) => {
@@ -151,43 +201,47 @@ app.get("/app/auth/fetch", async (req, res) => {
     logger: console,
   });
 
-
   app.use(
-      // shopify.validateAuthenticatedSession(), //this is needed for non-embedded
+    // shopify.validateAuthenticatedSession(), //this is needed for non-embedded
     async (req, res, next) => {
-        const session = req.query["session"] as string;
-        const shop = req.query["shop"] as string;
+      const session = req.query["session"] as string;
+      const shop = req.query["shop"] as string;
 
-        console.log("PATH", req.path);
+      console.log("PATH", req.path);
 
-        if (req.path.startsWith("/_next") || !shop) {
-            // Skip authentication for next.js files or (temporarily - debug) if no shop is specified
-            apiProxy(req, res, next);
-            return;
-        }
+      if (req.path.startsWith("/_next") || !shop) {
+        // Skip authentication for next.js files or (temporarily - debug) if no shop is specified
+        apiProxy(req, res, next);
+        return;
+      }
 
+      console.log("SHOP", shop);
+      console.log("next");
 
-        console.log("SHOP", shop);
-        console.log("next");
+      const sessionId = await shopify.api.session.getCurrentId({
+        isOnline: false,
+        rawRequest: req,
+        rawResponse: res,
+      });
+      console.log("sessionId 1:", sessionId);
 
-        const sessionId = await shopify.api.session.getCurrentId({
-            isOnline: false,
-            rawRequest: req,
-            rawResponse: res,
-        });
-        console.log('sessionId 1:', sessionId);
+      if (sessionId) {
+        const session = await shopifyService.getSession(sessionId);
 
-        if(sessionId) {
-            const session = await shopifyService.getSession(sessionId);
+        console.log("SESSION 1: ", session);
+      }
 
-            console.log('SESSION 1: ', session);
-        }
-
-        next();
+      next();
     },
     shopify.ensureInstalledOnShop(), //this is only needed for embeeded
     apiProxy,
   );
+
+  app.get("/app/delsess", async (req, res, next) => {
+    /* DEBUG */
+    shopifyService.deleteAllSessions("cs-connector-store.myshopify.com");
+    res.send("done");
+  });
 
   app.listen(port, () => {
     console.log(`🚀 Server running on port ${port}`);

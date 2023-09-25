@@ -1796,6 +1796,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@redis/client@npm:1.5.10":
+  version: 1.5.10
+  resolution: "@redis/client@npm:1.5.10"
+  dependencies:
+    cluster-key-slot: 1.1.2
+    generic-pool: 3.9.0
+    yallist: 4.0.0
+  checksum: 114379a3731eaf59485a42db4890924619c09df3c3d3b77cff1300a1a76d63a9ce39330609eb194526cf3316c56f405499807eb9f45cc8dfac9449e2b6d9a342
+  languageName: node
+  linkType: hard
+
 "@redis/client@npm:1.5.8":
   version: 1.5.8
   resolution: "@redis/client@npm:1.5.8"
@@ -1825,6 +1836,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@redis/json@npm:1.0.5":
+  version: 1.0.5
+  resolution: "@redis/json@npm:1.0.5"
+  peerDependencies:
+    "@redis/client": ^1.0.0
+  checksum: 522a569dfbbc1a7baa89d8381a885da900e79cc1dd84f8415716ac3a5d1a1eadd6f025893de1378ba7e092fa1d0cc1f4a63b8bda9a0fb395851b3591577c1902
+  languageName: node
+  linkType: hard
+
 "@redis/search@npm:1.1.3":
   version: 1.1.3
   resolution: "@redis/search@npm:1.1.3"
@@ -1834,12 +1854,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@redis/search@npm:1.1.4":
+  version: 1.1.4
+  resolution: "@redis/search@npm:1.1.4"
+  peerDependencies:
+    "@redis/client": ^1.0.0
+  checksum: 472bcf9b98c8f34a872bccdd7236374cda488990ebce9974e4ac5dc4e56516c8b519321e782ca43f33d335ef8dcbbfca4db4b23d7fe32bb86b84ac7518a732b9
+  languageName: node
+  linkType: hard
+
 "@redis/time-series@npm:1.0.4":
   version: 1.0.4
   resolution: "@redis/time-series@npm:1.0.4"
   peerDependencies:
     "@redis/client": ^1.0.0
   checksum: a5fca079deb04a2f204a7f9a375a6ff698a119d5dd53f7581fa8fd9e3bacacf1ecb0253b97fada484a012fea7a98014bc0f4f79707d4e92ff61c00318f2bfe04
+  languageName: node
+  linkType: hard
+
+"@redis/time-series@npm:1.0.5":
+  version: 1.0.5
+  resolution: "@redis/time-series@npm:1.0.5"
+  peerDependencies:
+    "@redis/client": ^1.0.0
+  checksum: 6bbdb0b793dcbd13518aa60a09a980f953554e4c745bfacc1611baa8098f360e0378e8ee6b7faf600a67f1de83f4b68bbec6f95a0740faee6164c14be3a30752
   languageName: node
   linkType: hard
 
@@ -1884,6 +1922,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@shopify/shopify-api@npm:^7.6.0":
+  version: 7.6.0
+  resolution: "@shopify/shopify-api@npm:7.6.0"
+  dependencies:
+    "@shopify/network": ^3.2.1
+    compare-versions: ^5.0.3
+    isbot: ^3.6.10
+    jose: ^4.9.1
+    node-fetch: ^2.6.1
+    tslib: ^2.0.3
+    uuid: ^9.0.0
+  checksum: 947bcd9cdf2f8313775828d9d9ab483ba492c6a12f12efc072cf24e37d4db768e1e01614ad1733954181ee1e89546d6248595509692e09a3e57f679bcdc65e3b
+  languageName: node
+  linkType: hard
+
 "@shopify/shopify-app-express@npm:^2.2.2":
   version: 2.2.2
   resolution: "@shopify/shopify-app-express@npm:2.2.2"
@@ -1911,6 +1964,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@shopify/shopify-app-session-storage-postgresql@npm:^1.1.10":
+  version: 1.1.10
+  resolution: "@shopify/shopify-app-session-storage-postgresql@npm:1.1.10"
+  dependencies:
+    pg: ^8.11.0
+    pg-connection-string: ^2.5.0
+    tslib: ^2.4.0
+  peerDependencies:
+    "@shopify/shopify-api": ^7.6.0
+    "@shopify/shopify-app-session-storage": ^1.1.9
+  checksum: 35900355035b87268f8c2e97324a1c45f1ad6d2bc8997971512d3542a60cbfeafbdac67f0dd5d8ad94418221b6700be2eac158de410dfde704476b5587b99b13
+  languageName: node
+  linkType: hard
+
+"@shopify/shopify-app-session-storage-redis@npm:^1.1.9":
+  version: 1.1.9
+  resolution: "@shopify/shopify-app-session-storage-redis@npm:1.1.9"
+  dependencies:
+    redis: ^4.6.6
+    tslib: ^2.4.0
+  peerDependencies:
+    "@shopify/shopify-api": ^7.6.0
+    "@shopify/shopify-app-session-storage": ^1.1.9
+  checksum: cf0be18df026f4f2bec0968c976765eac3d01bc260a237791f73fc4f0436081eb2a06643afcafa4c90472a435fa80bc943ea4ca174e683f58ba177c0a3d6fd6c
+  languageName: node
+  linkType: hard
+
 "@shopify/shopify-app-session-storage@npm:^1.1.8":
   version: 1.1.8
   resolution: "@shopify/shopify-app-session-storage@npm:1.1.8"
@@ -1919,6 +1999,17 @@ __metadata:
   peerDependencies:
     "@shopify/shopify-api": ^7.5.2
   checksum: 9a84fc80634dd33f5773cee4b8f751095953ec4c51ae5bbe0f30ace553658fbb82be814a3e7081d01f64dc186aae2bb969b1505cb1d26e681737659ddca6f8b9
+  languageName: node
+  linkType: hard
+
+"@shopify/shopify-app-session-storage@npm:^1.1.9":
+  version: 1.1.9
+  resolution: "@shopify/shopify-app-session-storage@npm:1.1.9"
+  dependencies:
+    tslib: ^2.4.0
+  peerDependencies:
+    "@shopify/shopify-api": ^7.6.0
+  checksum: b80887d0db220f7ca3e4197b78b8bfd8c0d1032ce76358d5761abc9eb18d3e6ed4fd2fdf8268549026417276463843c4804dd1838c55d4336d09ac3684926df9
   languageName: node
   linkType: hard
 
@@ -3047,8 +3138,12 @@ __metadata:
     "@mikro-orm/core": ^5.7.14
     "@mikro-orm/migrations": ^5.7.14
     "@mikro-orm/postgresql": ^5.7.14
+    "@shopify/shopify-api": ^7.6.0
     "@shopify/shopify-app-express": ^2.2.2
+    "@shopify/shopify-app-session-storage": ^1.1.9
     "@shopify/shopify-app-session-storage-memory": ^1.0.11
+    "@shopify/shopify-app-session-storage-postgresql": ^1.1.10
+    "@shopify/shopify-app-session-storage-redis": ^1.1.9
     "@types/body-parser": ^1.19.2
     "@types/express": ^4.17.17
     "@types/multer": ^1.4.7
@@ -6121,7 +6216,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-connection-string@npm:^2.6.1":
+"pg-connection-string@npm:^2.5.0, pg-connection-string@npm:^2.6.1, pg-connection-string@npm:^2.6.2":
   version: 2.6.2
   resolution: "pg-connection-string@npm:2.6.2"
   checksum: 22265882c3b6f2320785378d0760b051294a684989163d5a1cde4009e64e84448d7bf67d9a7b9e7f69440c3ee9e2212f9aa10dd17ad6773f6143c6020cebbcb5
@@ -6185,6 +6280,30 @@ __metadata:
     pg-native:
       optional: true
   checksum: e608fe1c52725e1c0c4cbdf97e29df8f41b9fd21aed821866e3488b3a0622be1c19801d8d8eb31f0de35f040c4f69163c211358e7df8c48d15ee8f660d2bd4cc
+  languageName: node
+  linkType: hard
+
+"pg@npm:^8.11.0":
+  version: 8.11.3
+  resolution: "pg@npm:8.11.3"
+  dependencies:
+    buffer-writer: 2.0.0
+    packet-reader: 1.0.0
+    pg-cloudflare: ^1.1.1
+    pg-connection-string: ^2.6.2
+    pg-pool: ^3.6.1
+    pg-protocol: ^1.6.0
+    pg-types: ^2.1.0
+    pgpass: 1.x
+  peerDependencies:
+    pg-native: ">=3.0.1"
+  dependenciesMeta:
+    pg-cloudflare:
+      optional: true
+  peerDependenciesMeta:
+    pg-native:
+      optional: true
+  checksum: 8af9468b8969fa0d73a6b349216c8cbc953d938fcae5594f2d24043060e9226a072c8085fc4230172b5576fcab4c39c8563c655f271dc2a9209b6ad5370cafe5
   languageName: node
   linkType: hard
 
@@ -6482,6 +6601,20 @@ __metadata:
   dependencies:
     redis-errors: ^1.0.0
   checksum: 89290ae530332f2ae37577647fa18208d10308a1a6ba750b9d9a093e7398f5e5253f19855b64c98757f7129cccce958e4af2573fdc33bad41405f87f1943459a
+  languageName: node
+  linkType: hard
+
+"redis@npm:^4.6.6":
+  version: 4.6.9
+  resolution: "redis@npm:4.6.9"
+  dependencies:
+    "@redis/bloom": 1.2.0
+    "@redis/client": 1.5.10
+    "@redis/graph": 1.1.0
+    "@redis/json": 1.0.5
+    "@redis/search": 1.1.4
+    "@redis/time-series": 1.0.5
+  checksum: ec4d16258b35be7a36205bfbe88d9b8d7b3a7538d84e0d5340b7fd9cbce943b296c8edba39565953e23b947b39e6854ad345702a0ed45699ba097013677fb79c
   languageName: node
   linkType: hard
 

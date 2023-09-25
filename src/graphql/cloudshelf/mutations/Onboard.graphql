@@ -1,0 +1,3 @@
+query ExchangeToken($token: String!) {
+    customTokenFromShopifySessionToken(sessionToken: $token)
+}

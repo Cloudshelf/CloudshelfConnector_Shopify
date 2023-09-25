@@ -130,6 +130,12 @@ export enum CapitalisationStyle {
   Uppercase = 'UPPERCASE'
 }
 
+export enum ClearSalesAssistantRule {
+  Daily = 'DAILY',
+  Never = 'NEVER',
+  SessionEnd = 'SESSION_END'
+}
+
 export type Cloudshelf = {
   __typename?: 'Cloudshelf';
   banners: Array<Banner>;
@@ -252,6 +258,17 @@ export type CloudshelfEdge = {
   node?: Maybe<Cloudshelf>;
 };
 
+export type CloudshelfEnginePayload = {
+  __typename?: 'CloudshelfEnginePayload';
+  cloudshelf?: Maybe<Cloudshelf>;
+  device?: Maybe<Device>;
+  engineType: EngineType;
+  errorMessage?: Maybe<Scalars['String']['output']>;
+  inMaintenanceMode: Scalars['Boolean']['output'];
+  owningOrganisation?: Maybe<Organisation>;
+  status: CloudshelfPayloadStatus;
+};
+
 export type CloudshelfIncludableFilter = {
   __typename?: 'CloudshelfIncludableFilter';
   extractionStatus: FilterExtractionStatus;
@@ -337,6 +354,25 @@ export type CloudshelfPaginatedPayload = {
   /** The total number of items available */
   totalCount: Scalars['Int']['output'];
 };
+
+export enum CloudshelfPayloadStatus {
+  Cached = 'CACHED',
+  CloudshelfPreview = 'CLOUDSHELF_PREVIEW',
+  DeviceNoCloudshelf = 'DEVICE_NO_CLOUDSHELF',
+  DeviceRemoved = 'DEVICE_REMOVED',
+  DeviceWithoutLocation = 'DEVICE_WITHOUT_LOCATION',
+  DeviceWithCloudshelf = 'DEVICE_WITH_CLOUDSHELF',
+  Error = 'ERROR',
+  Frozen = 'FROZEN',
+  MobileHandoff = 'MOBILE_HANDOFF',
+  Notfound = 'NOTFOUND'
+}
+
+export enum CloudshelfPayloadType {
+  Device = 'DEVICE',
+  Handoff = 'HANDOFF',
+  Preview = 'PREVIEW'
+}
 
 export type CloudshelfUpsertPayload = {
   __typename?: 'CloudshelfUpsertPayload';
@@ -863,6 +899,13 @@ export enum CurrencyCode {
   Usd = 'USD'
 }
 
+export type CustomIntegrationFullSignupResultPayload = {
+  __typename?: 'CustomIntegrationFullSignupResultPayload';
+  successful: Scalars['Boolean']['output'];
+  /** An array of errors that occurred during the sign up operation */
+  userErrors: Array<UserError>;
+};
+
 export type Device = {
   __typename?: 'Device';
   cloudshelf?: Maybe<Cloudshelf>;
@@ -978,7 +1021,7 @@ export type EngineProductWithAdditionalInfo = {
   handle: Scalars['String']['output'];
   id: Scalars['GlobalId']['output'];
   images: Array<EngineImageWithVariantInfo>;
-  metafields: Array<Metadata>;
+  metadata: Array<Metadata>;
   platformProvidedId?: Maybe<Scalars['GlobalId']['output']>;
   remoteUpdatedAt: Scalars['DateTime']['output'];
   tags: Array<Scalars['String']['output']>;
@@ -1028,8 +1071,10 @@ export type EngineVariant = {
   currentlyNotInStock: Scalars['Boolean']['output'];
   displayName: Scalars['String']['output'];
   hasSalePrice?: Maybe<Scalars['Boolean']['output']>;
-  id: Scalars['GlobalId']['output'];
+  id?: Maybe<Scalars['GlobalId']['output']>;
+  options: Array<KeyValuePair>;
   originalPrice: Scalars['Float']['output'];
+  platformProvidedId?: Maybe<Scalars['GlobalId']['output']>;
   price: Scalars['Float']['output'];
   sellableOnlineQuantity: Scalars['Float']['output'];
   sku: Scalars['String']['output'];
@@ -1134,6 +1179,20 @@ export enum FilterType {
   Vendor = 'VENDOR'
 }
 
+/** The anchor point for the images in the theme. This is used to determine how the images are cropped when they don't match the aspect ratio of the container. */
+export enum ImageAnchor {
+  /** Anchor the images at the bottom */
+  Bottom = 'BOTTOM',
+  /** Anchor the images at the center */
+  Center = 'CENTER',
+  /** Anchor the images at the left */
+  Left = 'LEFT',
+  /** Anchor the images at the right */
+  Right = 'RIGHT',
+  /** Anchor the images at the top */
+  Top = 'TOP'
+}
+
 export enum ImageOrientation {
   Landscape = 'Landscape',
   Portrait = 'Portrait',
@@ -1173,6 +1232,19 @@ export type KeyValuePair = {
   key: Scalars['String']['output'];
   /** The value for the key, this can be any string value. Usually either plain string or a stringified JSON object. */
   value: Scalars['String']['output'];
+};
+
+export type KeyValuePairInput = {
+  key: Scalars['String']['input'];
+  value: Scalars['String']['input'];
+};
+
+export type KnownVersion = {
+  __typename?: 'KnownVersion';
+  /** A unique internal GlobalId for this entity. */
+  id: Scalars['GlobalId']['output'];
+  versionString: Scalars['String']['output'];
+  versionType: VersionType;
 };
 
 /** This object represents a physical location, usually a store or a warehouse. */
@@ -1339,6 +1411,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   /** Adds the given list of products to the product group, if they are not already part of the product group */
   addProductsToProductGroup: Scalars['Boolean']['output'];
+  createUserAndOrganisationForCustomIntegration: CustomIntegrationFullSignupResultPayload;
   /** Allows deletion of Cloudshelves */
   deleteCloudshelves: CloudshelfDeletePayload;
   /** Allows deletion of Devices */
@@ -1361,13 +1434,14 @@ export type Mutation = {
   registerWebhook: WebhookRegisterPayload;
   /** Removes the given products from the product group, if they are currently part of it */
   removeProductsFromProductGroup: Scalars['Boolean']['output'];
+  reportDeviceOnline: Scalars['Boolean']['output'];
   /** This is an internal function. This allows Cloudshelf staff to run internal tools */
   runInternalTool: Scalars['String']['output'];
   saveSurveyAnswers: Scalars['Boolean']['output'];
   /** Sets the users currently active organisation (actingAs), which is used to decide which organisations data is accessed in other queries. */
   selectCurrentOrganisationAccess: Scalars['Boolean']['output'];
+  setActiveVersion: Scalars['Boolean']['output'];
   setPausedNobleQueuesByType: Scalars['Boolean']['output'];
-  signup: SignupResultPayload;
   subscribe: Scalars['String']['output'];
   toggleInMaintenanceMode: Scalars['Boolean']['output'];
   toggleNoblePaused: Scalars['Boolean']['output'];
@@ -1376,6 +1450,7 @@ export type Mutation = {
   unsubscribe: Scalars['Boolean']['output'];
   /** Allows updating basic user information */
   updateMyUser: User;
+  updateProductVariant: ProductVariant;
   /** Sets the products in the product group to the given list of products */
   updateProductsInProductGroup: Scalars['Boolean']['output'];
   updateSession: Session;
@@ -1387,8 +1462,11 @@ export type Mutation = {
   upsertLocations: LocationUpsertPayload;
   /** Allows upserting of Order entities */
   upsertOrders: OrderUpsertPayload;
+  /** Allows upserting of an organisation */
+  upsertOrganisation: OrganisationUpsertPayload;
   /** Allows upserting of product groups */
   upsertProductGroups: ProductGroupUpsertPayload;
+  upsertProductVariants: ProductVariantUpsertPayload;
   /** Allows upserting of Products */
   upsertProducts: ProductUpsertPayload;
   /** Allows upserting of Themes */
@@ -1399,6 +1477,16 @@ export type Mutation = {
 export type MutationAddProductsToProductGroupArgs = {
   productGroupId: Scalars['GlobalId']['input'];
   productIds: Array<Scalars['GlobalId']['input']>;
+};
+
+
+export type MutationCreateUserAndOrganisationForCustomIntegrationArgs = {
+  email: Scalars['String']['input'];
+  firstName: Scalars['String']['input'];
+  lastName: Scalars['String']['input'];
+  orgDomain: Scalars['String']['input'];
+  orgName: Scalars['String']['input'];
+  password: Scalars['String']['input'];
 };
 
 
@@ -1467,6 +1555,15 @@ export type MutationRemoveProductsFromProductGroupArgs = {
 };
 
 
+export type MutationReportDeviceOnlineArgs = {
+  engineVersion: Scalars['String']['input'];
+  id: Scalars['GlobalId']['input'];
+  screenHeight: Scalars['Int']['input'];
+  screenWidth: Scalars['Int']['input'];
+  userAgent: Scalars['String']['input'];
+};
+
+
 export type MutationRunInternalToolArgs = {
   toolType: Scalars['String']['input'];
 };
@@ -1482,16 +1579,15 @@ export type MutationSelectCurrentOrganisationAccessArgs = {
 };
 
 
-export type MutationSetPausedNobleQueuesByTypeArgs = {
-  types: Array<NobleTaskType>;
+export type MutationSetActiveVersionArgs = {
+  key: Scalars['String']['input'];
+  type: VersionType;
+  versionString: Scalars['String']['input'];
 };
 
 
-export type MutationSignupArgs = {
-  email: Scalars['String']['input'];
-  firstName: Scalars['String']['input'];
-  lastName: Scalars['String']['input'];
-  password: Scalars['String']['input'];
+export type MutationSetPausedNobleQueuesByTypeArgs = {
+  types: Array<NobleTaskType>;
 };
 
 
@@ -1546,8 +1642,19 @@ export type MutationUpsertOrdersArgs = {
 };
 
 
+export type MutationUpsertOrganisationArgs = {
+  input: OrganisationInput;
+};
+
+
 export type MutationUpsertProductGroupsArgs = {
   input: Array<ProductGroupInput>;
+};
+
+
+export type MutationUpsertProductVariantsArgs = {
+  inputs: Array<ProductVariantInput>;
+  productId: Scalars['ID']['input'];
 };
 
 
@@ -1787,6 +1894,8 @@ export type Organisation = {
   productGroups: Array<ProductGroup>;
   /** The products which belong to this organisation. */
   products: Array<Product>;
+  salesAssistantClearRule: ClearSalesAssistantRule;
+  salesAssistantNameRule: SalesAssistantNameRule;
   /** The date and time this entity was last updated. */
   updatedAt: Scalars['DateTime']['output'];
   users: Array<User>;
@@ -1798,6 +1907,12 @@ export type OrganisationEdge = {
   cursor?: Maybe<Scalars['String']['output']>;
   /** The Organisation entity */
   node?: Maybe<Organisation>;
+};
+
+export type OrganisationInput = {
+  /** The display name of the organisation */
+  displayName?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['GlobalId']['input'];
 };
 
 export type OrganisationPageInfo = {
@@ -1818,6 +1933,14 @@ export type OrganisationPaginatedPayload = {
   pageInfo?: Maybe<OrganisationPageInfo>;
   /** The total number of items available */
   totalCount: Scalars['Int']['output'];
+};
+
+export type OrganisationUpsertPayload = {
+  __typename?: 'OrganisationUpsertPayload';
+  /** The Organisation that has been updated */
+  organisation?: Maybe<Organisation>;
+  /** An array of errors that occurred during the upsert operation */
+  userErrors: Array<UserError>;
 };
 
 export type PdpBlockInput = {
@@ -2110,6 +2233,49 @@ export type ProductVariant = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type ProductVariantInput = {
+  /** An array of additional URLs of images of the product variant */
+  additionalImages?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** An array of attributes of the product variant */
+  attributes?: InputMaybe<Array<KeyValuePairInput>>;
+  /** Whether the product variant is available to purchase */
+  availableToPurchase?: InputMaybe<Scalars['Boolean']['input']>;
+  /** The current price of the product variant */
+  currentPrice?: InputMaybe<Scalars['Float']['input']>;
+  /** The display name of the product variant */
+  displayName?: InputMaybe<Scalars['String']['input']>;
+  /** The URL of the featured image of the product variant */
+  featuredImage?: InputMaybe<Scalars['String']['input']>;
+  /** Use this field to provide either a Cloudshelf gid, or your own external gid. If the external gid already exists, the existing record will be updated. If the external gid does not exist, a new record will be created. */
+  id?: InputMaybe<Scalars['GlobalId']['input']>;
+  /** Whether the product variant is in stock */
+  isInStock?: InputMaybe<Scalars['Boolean']['input']>;
+  /** An array of metadata to attach to the product variant */
+  metadata?: InputMaybe<Array<MetadataInput>>;
+  /** The original price of the product. If the product variant is not discounted, this should equal the original price */
+  originalPrice?: InputMaybe<Scalars['Float']['input']>;
+  /** The SKU of the product variant */
+  sku?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ProductVariantUpsertPayload = {
+  __typename?: 'ProductVariantUpsertPayload';
+  /** An array of ProductVariants that were created or updated */
+  productVariants: Array<ProductVariant>;
+  /** An array of errors that occurred during the upsert operation */
+  userErrors: Array<UserError>;
+};
+
+export type PublicDevicePayload = {
+  __typename?: 'PublicDevicePayload';
+  /** A unique internal GlobalId for this entity. */
+  id: Scalars['GlobalId']['output'];
+  ownerId?: Maybe<Scalars['GlobalId']['output']>;
+  ownerName?: Maybe<Scalars['String']['output']>;
+  registered: Scalars['Boolean']['output'];
+  registrationCode: Scalars['String']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
   /** Returns an array of PDP Blocks that are available to add to the PDP */
@@ -2118,6 +2284,7 @@ export type Query = {
   canRegisterDevice: Scalars['Boolean']['output'];
   /** Returns a Cloudshelf entity */
   cloudshelf?: Maybe<Cloudshelf>;
+  cloudshelfEnginePayload: CloudshelfEnginePayload;
   /** Returns a paginated array of Cloudshelves */
   cloudshelves: CloudshelfPaginatedPayload;
   /** An internal function for swapping a Shopify Session Token for a Cloudshelf Authentication Token. */
@@ -2129,6 +2296,7 @@ export type Query = {
   engineProducts: EngineProductWithAdditionalInfoPayload;
   /** Returns a Filter entity */
   filter?: Maybe<Filter>;
+  getVersionByType: KnownVersion;
   /** Returns all filters that can possibly be included in the Cloudshelf */
   includeableFilters: Array<CloudshelfIncludableFilter>;
   isInMaintenanceMode: Scalars['Boolean']['output'];
@@ -2157,6 +2325,8 @@ export type Query = {
   productGroups: ProductGroupPaginatedPayload;
   /** Returns a paginated array of Product entities. */
   products: ProductPaginatedPayload;
+  /** Returns public information about a device */
+  publicDevice?: Maybe<PublicDevicePayload>;
   /** Returns a subscription entity */
   subscription?: Maybe<SubscriptionRecord>;
   /** This is an internal function. This function is not intended to be included in the final release. Only exists due to CS-1273 */
@@ -2183,6 +2353,14 @@ export type QueryAvailablePdpBlocksArgs = {
 
 export type QueryCloudshelfArgs = {
   id: Scalars['GlobalId']['input'];
+};
+
+
+export type QueryCloudshelfEnginePayloadArgs = {
+  engineVersion?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['GlobalId']['input'];
+  payloadType: CloudshelfPayloadType;
+  reportPageLoad?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -2230,6 +2408,11 @@ export type QueryEngineProductsArgs = {
 
 export type QueryFilterArgs = {
   id: Scalars['GlobalId']['input'];
+};
+
+
+export type QueryGetVersionByTypeArgs = {
+  type: VersionType;
 };
 
 
@@ -2312,6 +2495,11 @@ export type QueryProductsArgs = {
 };
 
 
+export type QueryPublicDeviceArgs = {
+  id: Scalars['GlobalId']['input'];
+};
+
+
 export type QuerySubscriptionArgs = {
   id: Scalars['GlobalId']['input'];
 };
@@ -2350,6 +2538,12 @@ export type QueryWebhooksArgs = {
   sortBy?: InputMaybe<SortOptionsInput>;
 };
 
+export enum SalesAssistantNameRule {
+  FirstName = 'FIRST_NAME',
+  FullName = 'FULL_NAME',
+  Reference = 'REFERENCE'
+}
+
 /** This object represents a session that took place on a Cloudshelf */
 export type Session = {
   __typename?: 'Session';
@@ -2386,13 +2580,6 @@ export enum SessionStatus {
   Invalid = 'INVALID',
   InProgress = 'IN_PROGRESS'
 }
-
-export type SignupResultPayload = {
-  __typename?: 'SignupResultPayload';
-  successful: Scalars['Boolean']['output'];
-  /** An array of errors that occurred during the sign up operation */
-  userErrors: Array<UserError>;
-};
 
 export enum Size {
   Large = 'LARGE',
@@ -2544,6 +2731,7 @@ export type Theme = {
   headingFont: ThemeFont;
   /** A unique internal GlobalId for this entity. */
   id: Scalars['GlobalId']['output'];
+  imageAnchor: ImageAnchor;
   /** The logo URL for the organisations logo */
   logoUrl?: Maybe<Scalars['String']['output']>;
   /** The colour of the main text. */
@@ -2558,6 +2746,7 @@ export type Theme = {
   /** A boolean value indicating whether or not the Cloudshelf branding should be removed. */
   removeCloudshelfBranding: Scalars['Boolean']['output'];
   subheadingFont: ThemeFont;
+  tileSizeModifier: Scalars['Float']['output'];
   /** The date and time this entity was last updated. */
   updatedAt: Scalars['DateTime']['output'];
 };
@@ -2717,6 +2906,14 @@ export type UserOrganisationAccess = {
   user: User;
 };
 
+export enum VersionType {
+  Backend = 'BACKEND',
+  Engine = 'ENGINE',
+  Manager = 'MANAGER',
+  Storefinder = 'STOREFINDER',
+  Worker = 'WORKER'
+}
+
 export enum VisibilityType {
   CloudshelfInternal = 'CLOUDSHELF_INTERNAL',
   Retailer = 'RETAILER'
@@ -2789,3 +2986,16 @@ export type WebhookUnregisterInput = {
   /** The subject to unregister from, if ID is not provided */
   subject?: InputMaybe<WebhookSubject>;
 };
+
+
+export const ExchangeTokenDocument = gql`
+    query ExchangeToken($token: String!) {
+  customTokenFromShopifySessionToken(sessionToken: $token)
+}
+    `;
+export type ExchangeTokenQueryVariables = Exact<{
+  token: Scalars['String']['input'];
+}>;
+
+
+export type ExchangeTokenQuery = { __typename?: 'Query', customTokenFromShopifySessionToken: string };

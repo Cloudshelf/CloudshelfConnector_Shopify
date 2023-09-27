@@ -1,15 +1,13 @@
-import { container } from "tsyringe";
-import { QueueService } from "./queue.service";
 import { QueueNames } from "./queue.names.const";
+import { Container } from "../../container";
 
 export const registerQueues = async () => {
   console.debug("Registering queues...");
-  const queueService = container.resolve(QueueService);
-  await queueService.registerQueue(QueueNames.TEST, async (data) => {
+  await Container.queueService.registerQueue(QueueNames.TEST, async (data) => {
     console.log("QUEUE DATA", data);
   });
 
-  await queueService.registerQueue(
+  await Container.queueService.registerQueue(
     QueueNames.POST_INSTALL_THEME,
     async (data) => {
       console.log("POST_INSTALL_THEME", data);

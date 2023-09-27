@@ -1,18 +1,14 @@
 import "reflect-metadata";
 import * as dotenv from "dotenv";
 import express, { Request, Response, NextFunction, Express } from "express";
-import { container } from "tsyringe";
-import { DatabaseService } from "./modules/database/Database";
-import { RequestContext } from "@mikro-orm/core";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { createExpressServer } from "routing-controllers";
 import { ShopifyStoreController } from "./modules/shopifyStore/shopify-store.controller";
 import { DebugController } from "./modules/debug/debug.controller";
-import { ShopifyService } from "./modules/shopify/shopify.service";
-import { ShopifyStoreService } from "./modules/shopifyStore/shopify-store.service";
 import { registerQueues } from "./modules/queue/queue.registration";
 import { generateHtmlPayload } from "./generateHtmlPayload";
 import { getShopIdFromRequest } from "./utils/request-params";
+import { Container } from "./container";
 
 dotenv.config();
 
@@ -26,22 +22,24 @@ dotenv.config();
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
+  await Container.initialise();
+
+  if (!Container.isInitialised) {
+    throw new Error("Container was not configured");
+  }
   await registerQueues();
 
-  const databaseService = container.resolve(DatabaseService);
-  await databaseService.initialise();
-  const shopifyService = container.resolve(ShopifyService);
-  const shopify = shopifyService.shopify;
+  const shopifyApp = Container.shopifyService.shopifyApp;
 
-  console.log("Auth path:", shopify.config.auth.path);
-  app.get(shopify.config.auth.path, shopify.auth.begin());
+  console.log("Auth path:", shopifyApp.config.auth.path);
+  app.get(shopifyApp.config.auth.path, shopifyApp.auth.begin());
   app.get(
-    shopify.config.auth.callbackPath,
+    shopifyApp.config.auth.callbackPath,
     (req: Request, res: Response, next: NextFunction) => {
       console.log("Before callback");
       next();
     },
-    shopify.auth.callback(),
+    shopifyApp.auth.callback(),
     (req: Request, res: Response, next: NextFunction) => {
       console.log("After callback");
 
@@ -53,7 +51,7 @@ dotenv.config();
       );
     },
     //requestBilling
-    shopify.redirectToShopifyOrAppRoot(),
+    shopifyApp.redirectToShopifyOrAppRoot(),
   );
 
   /*app.post(
@@ -62,26 +60,23 @@ dotenv.config();
   );*/
 
   app.get("/shopify/cb", async (req, res, next) => {
-    const sessionId = await shopify.api.session.getCurrentId({
+    const sessionId = await shopifyApp.api.session.getCurrentId({
       isOnline: false,
       rawRequest: req,
       rawResponse: res,
     });
 
     if (sessionId) {
-      const session = await shopifyService.getSession(sessionId);
+      const session = await Container.shopifyService.getSession(sessionId);
       if (!session || !session.shop || !session.accessToken) {
         return;
       }
       // Store access token!
-      const storeService = container.resolve(ShopifyStoreService);
-      const store = await storeService.findStoreByDomain(
-        databaseService.getOrm(),
+      const store = await Container.shopifyStoreService.findStoreByDomain(
         session?.shop ?? "",
       );
       if (!store) {
-        await storeService.createStore(
-          databaseService.getOrm(),
+        await Container.shopifyStoreService.createStore(
           session.shop,
           session.accessToken,
         );
@@ -121,9 +116,9 @@ dotenv.config();
     );
   });
 
-  app.use((req, res, next) => {
-    RequestContext.create(databaseService.getOrm().em, next);
-  });
+  // app.use((req, res, next) => {
+  //   RequestContext.create(databaseService.getOrm().em, next);
+  // });
 
   // We proxy all requests except those prefixed with /app to the Cloudshelf Manager, so that the app can be embedded in
   // Shopify's Admin panel transparently. Most eCommerce connectors will not need to do this as apps will be hosted
@@ -152,7 +147,7 @@ dotenv.config();
       console.log("SHOP", shop);
       console.log("next");
 
-      const sessionId = await shopify.api.session.getCurrentId({
+      const sessionId = await shopifyApp.api.session.getCurrentId({
         isOnline: false,
         rawRequest: req,
         rawResponse: res,
@@ -160,33 +155,37 @@ dotenv.config();
       console.log("sessionId 1:", sessionId);
 
       if (sessionId) {
-        const session = await shopifyService.getSession(sessionId);
+        const session = await Container.shopifyService.getSession(sessionId);
 
         console.log("SESSION 1: ", session);
       }
 
       next();
     },
-    shopify.ensureInstalledOnShop(), //this is only needed for embeeded
+    shopifyApp.ensureInstalledOnShop(), //this is only needed for embeeded
     apiProxy,
   );
 
   app.get("/app/delsess", async (req, res, next) => {
     /* DEBUG */
-    shopifyService.deleteAllSessions("cs-connector-store.myshopify.com");
+    await Container.shopifyService.deleteAllSessions(
+      "cs-connector-store.myshopify.com",
+    );
     res.send("done");
   });
 
   app.get("/app/getsess", async (req, res, next) => {
     /* DEBUG */
-    shopifyService.printAllSessions("cs-connector-store.myshopify.com");
+    await Container.shopifyService.printAllSessions(
+      "cs-connector-store.myshopify.com",
+    );
     res.send("done");
   });
 
   app.get("/app/test", async (req, res, next) => {
     /* DEBUG */
-    databaseService.getOrm();
-
+    const orm = Container.orm;
+    console.log(orm);
     //A quick test area to test out code
 
     res.send("done test");

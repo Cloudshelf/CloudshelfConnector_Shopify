@@ -1,13 +1,10 @@
 import { ShopifyApp, shopifyApp } from "@shopify/shopify-app-express";
-import { injectable } from "tsyringe";
 import { RedisSessionStorage } from "@shopify/shopify-app-session-storage-redis";
 import "@shopify/shopify-api/adapters/node";
-import { shopifyApi } from "@shopify/shopify-api";
 import { SessionStorage } from "@shopify/shopify-app-session-storage";
 
-@injectable()
 export class ShopifyService {
-  public readonly shopify: ShopifyApp;
+  public readonly shopifyApp: ShopifyApp;
   private readonly sessionStorage: SessionStorage;
   constructor() {
     this.sessionStorage = RedisSessionStorage.withCredentials(
@@ -18,7 +15,7 @@ export class ShopifyService {
       {},
     );
 
-    this.shopify = shopifyApp({
+    this.shopifyApp = shopifyApp({
       api: {
         isEmbeddedApp: true,
         apiKey: process.env.SHOPIFY_API_KEY!,

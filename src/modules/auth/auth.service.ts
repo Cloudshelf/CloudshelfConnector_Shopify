@@ -1,7 +1,5 @@
 import * as crypto from "crypto";
-import { injectable } from "tsyringe";
 
-@injectable()
 export class AuthService {
   validateHmac(queryParams: { [key: string]: string }, hmac: string) {
     const secret = process.env.SHOPIFY_API_SECRET_KEY ?? "";

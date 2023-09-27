@@ -1,15 +1,12 @@
-import { injectable, singleton } from "tsyringe";
 import { MikroORM, PostgreSqlDriver } from "@mikro-orm/postgresql";
 import { ReflectMetadataProvider } from "@mikro-orm/core";
-import { PostgreSqlMikroORM } from "@mikro-orm/postgresql/PostgreSqlMikroORM";
 import config from "../../mikro-orm.config";
+import { PostgreSqlMikroORM } from "@mikro-orm/postgresql/PostgreSqlMikroORM";
 
-@injectable()
 export class DatabaseService {
   private initialised = false;
   private orm?: PostgreSqlMikroORM;
 
-  constructor() {}
   async initialise() {
     console.log("Initialising database");
     if (this.initialised) {

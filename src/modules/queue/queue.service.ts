@@ -1,9 +1,7 @@
-import { injectable } from "tsyringe";
 import { createClient, RedisClientType } from "redis";
 import { DelayedError, JobsOptions, Processor, Queue, Worker } from "bullmq";
 import { QueueNames } from "./queue.names.const";
 
-@injectable()
 export class QueueService {
   // Redis client
   private redis: RedisClientType;

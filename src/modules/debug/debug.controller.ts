@@ -1,16 +1,10 @@
 import { Controller, Get, Post, QueryParams, Req } from "routing-controllers";
-import { AuthService } from "../auth/auth.service";
-import { container, inject, injectable, Lifecycle, scoped } from "tsyringe";
 import { Request } from "express";
 import { OAuth2 } from "oauth";
 
 @Controller()
-@injectable()
 export class DebugController {
-  private readonly authService: AuthService;
-  constructor() {
-    this.authService = container.resolve(AuthService);
-  }
+  constructor() {}
   /*@Get("/auth")
   async getAuth(@Req() req: Request) {
     console.log("GET", req);

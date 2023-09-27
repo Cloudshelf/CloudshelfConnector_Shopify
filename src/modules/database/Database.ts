@@ -8,7 +8,7 @@ export class DatabaseService {
   private orm?: PostgreSqlMikroORM;
 
   async initialise() {
-    console.log("Initialising database");
+    console.log("Initialising database...");
     if (this.initialised) {
       return;
     }

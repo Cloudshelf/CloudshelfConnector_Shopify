@@ -14,6 +14,7 @@ export class Container {
   private static _queueService: QueueService;
 
   static async initialise() {
+    console.debug("Initialising container...");
     this._databaseService = new DatabaseService();
     await this._databaseService.initialise();
     this._shopifyService = new ShopifyService();
@@ -22,6 +23,7 @@ export class Container {
     this._queueService = new QueueService();
 
     this._initialised = true;
+    console.debug("Container initialised");
   }
 
   static get isInitialised() {

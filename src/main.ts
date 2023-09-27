@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import * as dotenv from "dotenv";
 import express, { Request, Response, NextFunction, Express } from "express";
-import validate from "./utils/request-validator";
 import { container } from "tsyringe";
 import { DatabaseService } from "./modules/database/Database";
 import { RequestContext } from "@mikro-orm/core";
@@ -11,10 +10,9 @@ import { ShopifyStoreController } from "./modules/shopifyStore/shopify-store.con
 import { DebugController } from "./modules/debug/debug.controller";
 import { ShopifyService } from "./modules/shopify/shopify.service";
 import { ShopifyStoreService } from "./modules/shopifyStore/shopify-store.service";
-import { QueueService } from "./modules/queue/queue.service";
-import { QueueNames } from "./modules/queue/queue.names.const";
 import { registerQueues } from "./modules/queue/queue.registration";
 import { generateHtmlPayload } from "./generateHtmlPayload";
+import { getShopIdFromRequest } from "./utils/request-params";
 
 dotenv.config();
 
@@ -49,7 +47,9 @@ dotenv.config();
 
       //after callback, direct to a page that does an authenticated fetch.
       res.redirect(
-        `https://admin.shopify.com/store/cs-connector-store/apps/${process.env.APP_SLUG}/app/auth/fetch`,
+        `https://admin.shopify.com/store/${getShopIdFromRequest(req)}/apps/${
+          process.env.APP_SLUG
+        }/app/auth/fetch`,
       );
     },
     //requestBilling
@@ -97,7 +97,9 @@ dotenv.config();
         loadingText: "Authenticating your store",
         script: `
           fetch('https://${process.env.HOSTNAME}/shopify/cb').then(() => {
-            open('https://admin.shopify.com/store/cs-connector-store/apps/${process.env.APP_SLUG}/', '_top');
+            open('https://admin.shopify.com/store/${getShopIdFromRequest(
+              req,
+            )}/apps/${process.env.APP_SLUG}/', '_top');
           });
         `,
       }),
@@ -127,7 +129,7 @@ dotenv.config();
   // Shopify's Admin panel transparently. Most eCommerce connectors will not need to do this as apps will be hosted
   // separately from the eCommerce platform.
   const apiProxy = createProxyMiddleware({
-    target: "https://development.manager.cloudshelf.ai",
+    target: `https://${process.env.MANAGER_HOSTNAME!}`,
     changeOrigin: true,
     pathFilter: ["**", "!/app/**", "!/exitiframe**"],
     logger: console,

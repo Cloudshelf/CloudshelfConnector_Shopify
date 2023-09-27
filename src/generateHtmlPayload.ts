@@ -8,6 +8,8 @@ export const generateHtmlPayload = (options?: {
         <meta name="shopify-api-key" content="${process.env.SHOPIFY_API_KEY}" />
         <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js" ></script>
         <script>
+            //restart the loading on the parent window
+            shopify.loading(false); 
             shopify.loading(true); 
             ${options?.script ? `${options.script}` : ""}
         </script>

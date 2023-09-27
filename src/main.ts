@@ -91,13 +91,11 @@ dotenv.config();
             <head>
                 <meta name="shopify-api-key" content="${process.env.SHOPIFY_API_KEY}" />
                 <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js" ></script>
-                <script> 
-                    //use app bridge to show loading
-                    shopify.loading(false); 
-                    //use app bright to call a request at the connector
-                    //We have to then fetch something
-                    //fetch is a global thing created by the app bridge, and it includes the auth headers that sessions apparently need.
-                    fetch('https://cs.arcanaeum.me/shopify/cb');
+                <script>
+                    shopify.loading(true); 
+                    fetch('https://cs.arcanaeum.me/shopify/cb').then(() => {
+                        open('https://admin.shopify.com/store/cs-connector-store/apps/${process.env.APP_SLUG}/', '_top');
+                    });
                 </script>
                 <style>
                     body {
@@ -108,32 +106,11 @@ dotenv.config();
                         gap: 24px;
                         align-items: center;
                     }
-                    button {
-                        border-radius: 35px;
-                        border: 1px solid #ec516c;
-                        background: #ec516c;
-                        color: #fff;
-                        padding: 8px;
-                        width: 350px;
-                        margin-top: 30px;
-                        cursor: pointer;
-                        transition: background .8s;
-                        margin-bottom: 8px;
-                        font-weight: 700; 
-                    }
-                    button:hover {
-                        background: #ec6e62 radial-gradient(circle,transparent 1%,#ec6e62 0) 50%/15000%;
-                        transition: background .8s;
-                    }
-                    button:active {
-                        background-color: #ec8f56;
-                        background-size: 100%;
-                    }
                 </style>
             </head>
             <body>
                 <img src="https://development.manager.cloudshelf.ai/img/cloudshelf_long_logo.svg" alt="Cloudshelf" width="243px"/>
-                <button onclick="top.location.href = 'https://admin.shopify.com/store/cs-connector-store/apps/${process.env.APP_SLUG}/'">Continue to Cloudshelf</button>
+                <p>Loading...</p>
             </body>
         </html>
       `);
@@ -156,32 +133,17 @@ dotenv.config();
                         gap: 24px;
                         align-items: center;
                     }
-                    button {
-                        border-radius: 35px;
-                        border: 1px solid #ec516c;
-                        background: #ec516c;
-                        color: #fff;
-                        padding: 8px;
-                        width: 350px;
-                        margin-top: 30px;
-                        cursor: pointer;
-                        transition: background .8s;
-                        margin-bottom: 8px;
-                        font-weight: 700; 
-                    }
-                    button:hover {
-                        background: #ec6e62 radial-gradient(circle,transparent 1%,#ec6e62 0) 50%/15000%;
-                        transition: background .8s;
-                    }
-                    button:active {
-                        background-color: #ec8f56;
-                        background-size: 100%;
-                    }
                 </style>
+                <meta name="shopify-api-key" content="${process.env.SHOPIFY_API_KEY}" />
+                <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
+                <script>
+                    shopify.loading(true);
+                    open('${fullUrl}', '_top');
+                </script>
             </head>
             <body>
                 <img src="https://development.manager.cloudshelf.ai/img/cloudshelf_long_logo.svg" alt="Cloudshelf" width="243px"/>
-                <button onclick="top.location.href = '${fullUrl}'">Authorize Cloudshelf</button>
+                <p>Loading...</p>
             </body>
         </html>
       `);

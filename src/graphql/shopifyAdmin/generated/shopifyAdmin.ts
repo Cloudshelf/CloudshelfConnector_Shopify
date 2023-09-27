@@ -5129,7 +5129,7 @@ export enum CurrencyCode {
    * @deprecated `VEF` is deprecated. Use `VES` available from version `2020-10` onwards instead.
    */
   Vef = 'VEF',
-  /** Venezuelan Bolivares (VES). */
+  /** Venezuelan Bolivares Soberanos (VES). */
   Ves = 'VES',
   /** Vietnamese đồng (VND). */
   Vnd = 'VND',
@@ -27778,7 +27778,7 @@ export type QueryRoot = {
   giftCardsCount: Scalars['UnsignedInt64']['output'];
   /**
    * Returns an
-   * `[InventoryItem](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem)`
+   * [InventoryItem](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem)
    * object by ID.
    *
    */
@@ -27787,7 +27787,7 @@ export type QueryRoot = {
   inventoryItems: InventoryItemConnection;
   /**
    * Returns an
-   * `[InventoryLevel](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryLevel)`
+   * [InventoryLevel](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryLevel)
    * object by ID.
    *
    */
@@ -37685,6 +37685,35 @@ export type DeliveryProfileUpdatePayload = {
 };
 
 
+export const CreateStorefrontAccessTokenDocument = gql`
+    mutation CreateStorefrontAccessToken($input: StorefrontAccessTokenInput!) {
+  storefrontAccessTokenCreate(input: $input) {
+    storefrontAccessToken {
+      accessToken
+      title
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+    `;
+export const GetStorefrontAccessTokensDocument = gql`
+    query GetStorefrontAccessTokens {
+  shop {
+    storefrontAccessTokens(first: 10) {
+      edges {
+        node {
+          id
+          title
+          accessToken
+        }
+      }
+    }
+  }
+}
+    `;
 export const GetProductsDocument = gql`
     query GetProducts {
   products(first: 5) {
@@ -37696,6 +37725,18 @@ export const GetProductsDocument = gql`
   }
 }
     `;
+export type CreateStorefrontAccessTokenMutationVariables = Exact<{
+  input: StorefrontAccessTokenInput;
+}>;
+
+
+export type CreateStorefrontAccessTokenMutation = { __typename?: 'Mutation', storefrontAccessTokenCreate?: { __typename?: 'StorefrontAccessTokenCreatePayload', storefrontAccessToken?: { __typename?: 'StorefrontAccessToken', accessToken: string, title: string } | null, userErrors: Array<{ __typename?: 'UserError', field?: Array<string> | null, message: string }> } | null };
+
+export type GetStorefrontAccessTokensQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetStorefrontAccessTokensQuery = { __typename?: 'QueryRoot', shop: { __typename?: 'Shop', storefrontAccessTokens: { __typename?: 'StorefrontAccessTokenConnection', edges: Array<{ __typename?: 'StorefrontAccessTokenEdge', node: { __typename?: 'StorefrontAccessToken', id: string, title: string, accessToken: string } }> } } };
+
 export type GetProductsQueryVariables = Exact<{ [key: string]: never; }>;
 
 

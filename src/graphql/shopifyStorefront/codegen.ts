@@ -6,14 +6,14 @@ dotenv.config();
 const config: CodegenConfig = {
   overwrite: true,
   schema: {
-    [process.env.SHOPIFY_API_URL!]: {
+    [process.env.SHOPIFY_API_URL_STOREFRONT!]: {
       headers: {
-        "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN!,
+        "X-Shopify-Storefront-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN_STOREFRONT!,
       },
     },
   },
   generates: {
-    "src/graphql/shopify/generated/shopify.ts": {
+    "src/graphql/shopifyStorefront/generated/shopifyStorefront.ts": {
       plugins: [
         "typescript",
         "typescript-document-nodes",
@@ -23,11 +23,11 @@ const config: CodegenConfig = {
         nameSuffix: "Document",
       },
     },
-    "src/graphql/shopify/generated/shopify.schema.json": {
+    "src/graphql/shopifyStorefront/generated/shopifyStorefront.schema.json": {
       plugins: ["introspection"],
     },
   },
-  documents: "src/graphql/shopify/**/*.graphql",
+  documents: "src/graphql/shopifyStorefront/**/*.graphql",
 };
 
 export default config;

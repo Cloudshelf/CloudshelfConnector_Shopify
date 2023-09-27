@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "nodemon src/main.ts",
     "codegen:cloudshelf": "graphql-codegen --config src/graphql/cloudshelf/codegen.ts",
-    "codegen:shopify": "graphql-codegen --config src/graphql/shopify/codegen.ts",
+    "codegen:shopifyAdmin": "graphql-codegen --config src/graphql/shopifyAdmin/codegen.ts",
+    "codegen:shopifyStorefront": "graphql-codegen --config src/graphql/shopifyStorefront/codegen.ts",
     "codegen:database": "kysely-codegen",
     "migration:create": "mikro-orm migration:create",
     "migration:up": "mikro-orm migration:up",

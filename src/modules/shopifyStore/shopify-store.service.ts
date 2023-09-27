@@ -3,12 +3,24 @@ import { DatabaseService } from "../database/Database";
 import { PostgreSqlMikroORM } from "@mikro-orm/postgresql/PostgreSqlMikroORM";
 import { ShopifyStore } from "./shopify-store.entity";
 import { RequestContext } from "@mikro-orm/core";
-import { ShopifyClient } from "../shopifyClient/ShopifyClient";
+import { ShopifyAdminClient } from "../shopifyClient/ShopifyAdminClient";
 import {
+  CreateStorefrontAccessTokenDocument,
+  CreateStorefrontAccessTokenMutation,
+  CreateStorefrontAccessTokenMutationVariables,
   GetProductsDocument,
   GetProductsQuery,
   GetProductsQueryVariables,
-} from "../../graphql/shopify/generated/shopify";
+  GetStorefrontAccessTokensDocument,
+  GetStorefrontAccessTokensQuery,
+  GetStorefrontAccessTokensQueryVariables
+} from "../../graphql/shopifyAdmin/generated/shopifyAdmin";
+import {ShopifyStorefrontClient} from "../shopifyClient/ShopifyStorefrontClient";
+import {
+  GetThemeInformationDocument,
+  GetThemeInformationQuery,
+  GetThemeInformationQueryVariables
+} from "../../graphql/shopifyStorefront/generated/shopifyStorefront";
 
 @injectable()
 export class ShopifyStoreService {
@@ -41,7 +53,7 @@ export class ShopifyStoreService {
   }
 
   async getProducts(orm: PostgreSqlMikroORM, domain: string) {
-    const client = new ShopifyClient(domain);
+    const client = new ShopifyAdminClient(domain);
     const apollo = await client.apollo(orm);
     if (!apollo) {
       return [];
@@ -51,6 +63,64 @@ export class ShopifyStoreService {
       GetProductsQueryVariables
     >({
       query: GetProductsDocument,
+    });
+
+    console.log(query.data);
+  }
+
+  async createAccessTokenIfNeeded(orm: PostgreSqlMikroORM, domain: string) {
+    const client = new ShopifyStorefrontClient(domain);
+    const apollo = await client.apollo(orm);
+    if(!apollo) {
+      throw new Error('No apollo client');
+    }
+
+    const query = await apollo.query<
+        GetStorefrontAccessTokensQuery,
+        GetStorefrontAccessTokensQueryVariables
+    >({
+      query: GetStorefrontAccessTokensDocument,
+    });
+
+    const existingAccessTokens = query.data.shop.storefrontAccessTokens.edges ?? [];
+
+    const cloudshelfAccessToken = existingAccessTokens.find((existingToken) => existingToken.node.title === 'Cloudshelf')?.node;
+
+    if(cloudshelfAccessToken) {
+      return cloudshelfAccessToken.accessToken;
+    } else {
+        const newAccessToken = await apollo.mutate<
+            CreateStorefrontAccessTokenMutation,
+            CreateStorefrontAccessTokenMutationVariables
+        >({
+            mutation: CreateStorefrontAccessTokenDocument,
+              variables: {
+                input: {
+                    title: 'Cloudshelf'
+                }
+              }
+        });
+
+        if(!newAccessToken.data?.storefrontAccessTokenCreate?.storefrontAccessToken){
+          throw new Error('Could not create access token');
+        }
+        else {
+            return newAccessToken.data.storefrontAccessTokenCreate.storefrontAccessToken.accessToken;
+        }
+    }
+  }
+
+  async getTheme(orm: PostgreSqlMikroORM, domain: string) {
+    const client = new ShopifyStorefrontClient(domain);
+    const apollo = await client.apollo(orm);
+    if (!apollo) {
+      return [];
+    }
+    const query = await apollo.query<
+      GetThemeInformationQuery,
+      GetThemeInformationQueryVariables
+    >({
+      query: GetThemeInformationDocument,
     });
 
     console.log(query.data);

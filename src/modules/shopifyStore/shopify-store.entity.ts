@@ -10,4 +10,7 @@ export class ShopifyStore {
 
   @Property({ type: "text" })
   accessToken!: string;
+
+  @Property({ type: "text" })
+  storefrontToken!: string;
 }

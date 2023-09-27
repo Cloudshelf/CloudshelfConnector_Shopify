@@ -1,0 +1,26 @@
+mutation CreateStorefrontAccessToken($input: StorefrontAccessTokenInput!) {
+    storefrontAccessTokenCreate(input: $input) {
+        storefrontAccessToken {
+            accessToken
+            title
+        }
+        userErrors {
+            field
+            message
+        }
+    }
+}
+
+query GetStorefrontAccessTokens {
+    shop {
+        storefrontAccessTokens(first: 10) {
+            edges {
+                node {
+                    id
+                    title
+                    accessToken
+                }
+            }
+        }
+    }
+}

@@ -1,13 +1,12 @@
 import {
   ApolloClient,
   InMemoryCache,
-  NormalizedCacheObject,
 } from "@apollo/client/core";
 import { container } from "tsyringe";
 import { ShopifyStoreService } from "../shopifyStore/shopify-store.service";
 import { PostgreSqlMikroORM } from "@mikro-orm/postgresql/PostgreSqlMikroORM";
 
-export class ShopifyClient {
+export class ShopifyAdminClient {
   private readonly domain: string;
   constructor(domain: string) {
     this.domain = domain;
@@ -20,7 +19,7 @@ export class ShopifyClient {
       return null;
     }
     return new ApolloClient({
-      uri: `https://${this.domain}/admin/api/2022-10/graphql.json`,
+      uri: `https://${this.domain}/admin/api/${process.env.SHOPIFY_API_VERSION!}/graphql.json`,
       cache: new InMemoryCache(),
       // Header
       headers: {

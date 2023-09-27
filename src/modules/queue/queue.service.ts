@@ -1,6 +1,7 @@
 import { injectable } from "tsyringe";
 import { createClient, RedisClientType } from "redis";
-import {DelayedError, JobsOptions, Processor, Queue, Worker} from "bullmq";
+import { DelayedError, JobsOptions, Processor, Queue, Worker } from "bullmq";
+import { QueueNames } from "./queue.names.const";
 
 @injectable()
 export class QueueService {
@@ -17,11 +18,10 @@ export class QueueService {
   }
 
   async registerQueue(
-    queueName: string,
+    queueName: QueueNames,
     processor: Processor,
     concurrency = 1,
     attempts = 10,
-
   ): Promise<void> {
     const queue = new Queue(queueName, {
       connection: {
@@ -89,7 +89,9 @@ export class QueueService {
     this.queues[queueName] = queue;
     this.workers[queueName] = worker;
 
-    console.debug(`Registered queue ${queueName}, with {concurrency:${concurrency}, attempts:${attempts}}`);
+    console.debug(
+      `Registered queue ${queueName}, with {concurrency:${concurrency}, attempts:${attempts}}`,
+    );
   }
 
   async acquireLock(id: string) {

@@ -15,7 +15,7 @@ export class ShopifyStorefrontClient {
   async apollo(orm: PostgreSqlMikroORM) {
     const shopifyStoreService = container.resolve(ShopifyStoreService);
     const store = await shopifyStoreService.findStoreByDomain(orm, this.domain);
-    if (!store) {
+    if (!store || !store.storefrontToken) {
       return null;
     }
     return new ApolloClient({

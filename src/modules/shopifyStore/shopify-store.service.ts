@@ -34,9 +34,11 @@ export class ShopifyStoreService {
     const existingStore = await this.findStoreByDomain(orm, domain);
 
     if (!existingStore) {
+      const storefrontAccessToken = await this.createAccessTokenIfNeeded(orm, domain, accessToken);
       const store = new ShopifyStore();
       store.domain = domain;
       store.accessToken = accessToken;
+      store.storefrontToken = storefrontAccessToken;
       await em.upsert(ShopifyStore, store);
       await em.flush();
 
@@ -68,11 +70,11 @@ export class ShopifyStoreService {
     console.log(query.data);
   }
 
-  async createAccessTokenIfNeeded(orm: PostgreSqlMikroORM, domain: string) {
-    const client = new ShopifyStorefrontClient(domain);
-    const apollo = await client.apollo(orm);
+  async createAccessTokenIfNeeded(orm: PostgreSqlMikroORM, storeDomain: string, accessToken: string) {
+    const client = new ShopifyAdminClient(storeDomain);
+    const apollo = await client.apollo(orm, {domain: storeDomain, accessToken})
     if(!apollo) {
-      throw new Error('No apollo client');
+      return null;
     }
 
     const query = await apollo.query<
@@ -82,13 +84,15 @@ export class ShopifyStoreService {
       query: GetStorefrontAccessTokensDocument,
     });
 
-    const existingAccessTokens = query.data.shop.storefrontAccessTokens.edges ?? [];
+    const existingStorefrontAccessTokens = query.data.shop.storefrontAccessTokens.edges ?? [];
 
-    const cloudshelfAccessToken = existingAccessTokens.find((existingToken) => existingToken.node.title === 'Cloudshelf')?.node;
+    const cloudshelfStorefrontAccessToken = existingStorefrontAccessTokens.find((existingToken) => existingToken.node.title === 'Cloudshelf')?.node;
 
-    if(cloudshelfAccessToken) {
-      return cloudshelfAccessToken.accessToken;
+    if(cloudshelfStorefrontAccessToken) {
+      console.debug('Found existing storefront token', cloudshelfStorefrontAccessToken.accessToken);
+      return cloudshelfStorefrontAccessToken.accessToken;
     } else {
+      console.debug('No existing storefront token, creating new one');
         const newAccessToken = await apollo.mutate<
             CreateStorefrontAccessTokenMutation,
             CreateStorefrontAccessTokenMutationVariables
@@ -102,9 +106,10 @@ export class ShopifyStoreService {
         });
 
         if(!newAccessToken.data?.storefrontAccessTokenCreate?.storefrontAccessToken){
-          throw new Error('Could not create access token');
+          return null;
         }
         else {
+            console.debug('Created new storefront token', newAccessToken.data.storefrontAccessTokenCreate.storefrontAccessToken.accessToken);
             return newAccessToken.data.storefrontAccessTokenCreate.storefrontAccessToken.accessToken;
         }
     }

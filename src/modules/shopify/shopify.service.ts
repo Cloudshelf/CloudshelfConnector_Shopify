@@ -78,4 +78,11 @@ export class ShopifyService {
       await this.sessionStorage.deleteSession(session.id);
     }
   }
+
+  async printAllSessions(shop: string) {
+    const sessions = await this.sessionStorage.findSessionsByShop(shop);
+    for (const session of sessions) {
+      console.log("Session:", session);
+    }
+  }
 }

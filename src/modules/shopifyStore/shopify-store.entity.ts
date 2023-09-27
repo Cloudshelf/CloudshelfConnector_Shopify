@@ -2,6 +2,10 @@ import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
 
 @Entity()
 export class ShopifyStore {
+  constructor() {
+    this.storefrontToken = null;
+  }
+
   @PrimaryKey({ type: "uuid", defaultRaw: "uuid_generate_v4()" })
   id!: string;
 
@@ -11,6 +15,6 @@ export class ShopifyStore {
   @Property({ type: "text" })
   accessToken!: string;
 
-  @Property({ type: "text" })
-  storefrontToken!: string;
+  @Property({ type: "text", nullable: true })
+  storefrontToken: string | null;
 }

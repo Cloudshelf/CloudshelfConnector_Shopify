@@ -9,6 +9,7 @@ import { registerQueues } from "./modules/queue/queue.registration";
 import { generateHtmlPayload } from "./generateHtmlPayload";
 import { getShopIdFromRequest } from "./utils/request-params";
 import { Container } from "./container";
+import { createHmac } from "crypto";
 
 dotenv.config();
 
@@ -131,9 +132,8 @@ dotenv.config();
   });
 
   app.use(
-    // shopify.validateAuthenticatedSession(), //this is needed for non-embedded
+    //shopifyApp.validateAuthenticatedSession(), //this is needed for non-embedded
     async (req, res, next) => {
-      const session = req.query["session"] as string;
       const shop = req.query["shop"] as string;
 
       console.log("PATH", req.path);
@@ -147,17 +147,39 @@ dotenv.config();
       console.log("SHOP", shop);
       console.log("next");
 
-      const sessionId = await shopifyApp.api.session.getCurrentId({
-        isOnline: false,
-        rawRequest: req,
-        rawResponse: res,
-      });
-      console.log("sessionId 1:", sessionId);
+      // Verify hmac
+      const hmac = req.query["hmac"] as string;
+      const params = { ...req.query };
+      delete params["hmac"];
+      const message = Object.keys(params)
+        .map((key) => `${key}=${params[key]}`)
+        .sort()
+        .join("&");
+      const generatedHash = createHmac(
+        "sha256",
+        process.env.SHOPIFY_API_SECRET_KEY!,
+      );
+      generatedHash.update(message);
+      const generatedHashString = generatedHash.digest("hex");
+      if (generatedHashString !== hmac) {
+        res.status(401).send("Invalid HMAC");
+        return;
+      }
 
-      if (sessionId) {
-        const session = await Container.shopifyService.getSession(sessionId);
+      const session = await Container.shopifyService.getSession(
+        shopifyApp.api.session.getOfflineId(shop),
+      );
 
-        console.log("SESSION 1: ", session);
+      if (session) {
+        const store =
+          await Container.shopifyStoreService.findStoreByDomain(shop);
+        if (!store && session.accessToken) {
+          console.log("Creating store (again?)");
+          await Container.shopifyStoreService.createStore(
+            shop,
+            session.accessToken,
+          );
+        }
       }
 
       next();

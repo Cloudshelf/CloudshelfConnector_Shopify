@@ -1,3 +1,15 @@
 query ExchangeToken($token: String!) {
     customTokenFromShopifySessionToken(sessionToken: $token)
 }
+
+mutation UpsertStore($input: ShopifyStoreInput!, $hmac: String!, $nonce: String!) {
+   upsertShopifyOrganisation(input: $input, hmac: $hmac, nonce: $nonce) {
+       organisation {
+           id
+       }
+       userErrors {
+           message
+           code
+       }
+   }
+}

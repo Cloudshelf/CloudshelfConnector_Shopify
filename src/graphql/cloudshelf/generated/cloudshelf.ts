@@ -1469,6 +1469,7 @@ export type Mutation = {
   upsertProductVariants: ProductVariantUpsertPayload;
   /** Allows upserting of Products */
   upsertProducts: ProductUpsertPayload;
+  upsertShopifyOrganisation: OrganisationUpsertPayload;
   /** Allows upserting of Themes */
   upsertTheme: ThemeUpsertPayload;
 };
@@ -1660,6 +1661,13 @@ export type MutationUpsertProductVariantsArgs = {
 
 export type MutationUpsertProductsArgs = {
   input: Array<ProductInput>;
+};
+
+
+export type MutationUpsertShopifyOrganisationArgs = {
+  hmac: Scalars['String']['input'];
+  input: ShopifyStoreInput;
+  nonce: Scalars['String']['input'];
 };
 
 
@@ -2581,6 +2589,18 @@ export enum SessionStatus {
   InProgress = 'IN_PROGRESS'
 }
 
+export type ShopifyStoreInput = {
+  /** Shopify access token for the store */
+  accessToken?: InputMaybe<Scalars['String']['input']>;
+  /** The display name of the organisation */
+  displayName?: InputMaybe<Scalars['String']['input']>;
+  /** Domain of the shopify store */
+  domain?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['GlobalId']['input']>;
+  /** Shopify storefront access token for the store */
+  storefrontAccessToken?: InputMaybe<Scalars['String']['input']>;
+};
+
 export enum Size {
   Large = 'LARGE',
   Regular = 'REGULAR',
@@ -2880,6 +2900,7 @@ export enum UserErrorCode {
   /** An error occurred while attempting to upload an image */
   ImageUploadError = 'IMAGE_UPLOAD_ERROR',
   InvalidArgument = 'INVALID_ARGUMENT',
+  InvalidHmac = 'INVALID_HMAC',
   UnknownError = 'UNKNOWN_ERROR'
 }
 
@@ -2993,9 +3014,53 @@ export const ExchangeTokenDocument = gql`
   customTokenFromShopifySessionToken(sessionToken: $token)
 }
     `;
+export const UpsertStoreDocument = gql`
+    mutation UpsertStore($input: ShopifyStoreInput!, $hmac: String!, $nonce: String!) {
+  upsertShopifyOrganisation(input: $input, hmac: $hmac, nonce: $nonce) {
+    organisation {
+      id
+    }
+    userErrors {
+      message
+      code
+    }
+  }
+}
+    `;
+export const ProductsTestDocument = gql`
+    query ProductsTest {
+  products(first: 3) {
+    edges {
+      node {
+        id
+      }
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      endCursor
+      startCursor
+    }
+  }
+}
+    `;
 export type ExchangeTokenQueryVariables = Exact<{
   token: Scalars['String']['input'];
 }>;
 
 
 export type ExchangeTokenQuery = { __typename?: 'Query', customTokenFromShopifySessionToken: string };
+
+export type UpsertStoreMutationVariables = Exact<{
+  input: ShopifyStoreInput;
+  hmac: Scalars['String']['input'];
+  nonce: Scalars['String']['input'];
+}>;
+
+
+export type UpsertStoreMutation = { __typename?: 'Mutation', upsertShopifyOrganisation: { __typename?: 'OrganisationUpsertPayload', organisation?: { __typename?: 'Organisation', id: any } | null, userErrors: Array<{ __typename?: 'UserError', message: string, code: UserErrorCode }> } };
+
+export type ProductsTestQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ProductsTestQuery = { __typename?: 'Query', products: { __typename?: 'ProductPaginatedPayload', edges?: Array<{ __typename?: 'ProductEdge', node?: { __typename?: 'Product', id: any } | null }> | null, pageInfo?: { __typename?: 'ProductPageInfo', hasNextPage: boolean, hasPreviousPage: boolean, endCursor?: string | null, startCursor?: string | null } | null } };

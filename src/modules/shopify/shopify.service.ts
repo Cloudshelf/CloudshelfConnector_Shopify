@@ -62,10 +62,6 @@ export class ShopifyService {
   }
 
   async getSession(id: string) {
-    const sessions = this.sessionStorage.findSessionsByShop(
-      "cs-connector-store.myshopify.com",
-    );
-    console.log("Sessions for store:", await sessions);
     return this.sessionStorage.loadSession(id);
   }
 

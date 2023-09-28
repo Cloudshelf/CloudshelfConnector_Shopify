@@ -18,6 +18,16 @@ import {
   GetThemeInformationQueryVariables,
 } from "../../graphql/shopifyStorefront/generated/shopifyStorefront";
 import { Container } from "../../container";
+import {
+  ProductsTestDocument,
+  ProductsTestQuery,
+  ProductsTestQueryVariables,
+  UpsertStoreDocument,
+  UpsertStoreMutation,
+  UpsertStoreMutationVariables,
+} from "../../graphql/cloudshelf/generated/cloudshelf";
+import { createHmac } from "../../utils/hmac";
+import { CloudshelfClientFactory } from "../cloudshelfClient/CloudshelfClient";
 
 export class ShopifyStoreService {
   async createStore(domain: string, accessToken: string) {
@@ -35,6 +45,39 @@ export class ShopifyStoreService {
       store.storefrontToken = storefrontAccessToken;
       await em.upsert(ShopifyStore, store);
       await em.flush();
+
+      const timestamp = new Date().getTime().toString();
+      console.log(timestamp);
+      const mutationTuple = await CloudshelfClientFactory.getClient().mutate<
+        UpsertStoreMutation,
+        UpsertStoreMutationVariables
+      >({
+        mutation: UpsertStoreDocument,
+        variables: {
+          input: {
+            domain,
+            accessToken,
+            storefrontAccessToken,
+          },
+          hmac: createHmac(accessToken, timestamp),
+          nonce: timestamp,
+        },
+      });
+
+      if (mutationTuple.errors || !mutationTuple.data) {
+        console.log("Bad things");
+      }
+      console.log("Data", mutationTuple.data);
+
+      const authenticatedClient = CloudshelfClientFactory.getClient(domain);
+      const queryTuple = await authenticatedClient.query<
+        ProductsTestQuery,
+        ProductsTestQueryVariables
+      >({
+        query: ProductsTestDocument,
+      });
+
+      console.log("Query", queryTuple.data);
 
       await this.getProducts(domain);
     }

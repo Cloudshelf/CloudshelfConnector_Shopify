@@ -47,7 +47,6 @@ export class ShopifyStoreService {
       await em.flush();
 
       const timestamp = new Date().getTime().toString();
-      console.log(timestamp);
       const mutationTuple = await CloudshelfClientFactory.getClient().mutate<
         UpsertStoreMutation,
         UpsertStoreMutationVariables
@@ -65,9 +64,8 @@ export class ShopifyStoreService {
       });
 
       if (mutationTuple.errors || !mutationTuple.data) {
-        console.log("Bad things");
+        console.log("Failed to create store in cloudshelf");
       }
-      console.log("Data", mutationTuple.data);
 
       const authenticatedClient = CloudshelfClientFactory.getClient(domain);
       const queryTuple = await authenticatedClient.query<
@@ -76,8 +74,6 @@ export class ShopifyStoreService {
       >({
         query: ProductsTestDocument,
       });
-
-      console.log("Query", queryTuple.data);
 
       await this.getProducts(domain);
     }

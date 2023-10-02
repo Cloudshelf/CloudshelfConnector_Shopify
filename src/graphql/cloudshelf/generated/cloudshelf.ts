@@ -2597,6 +2597,8 @@ export type ShopifyStoreInput = {
   /** Domain of the shopify store */
   domain?: InputMaybe<Scalars['String']['input']>;
   id?: InputMaybe<Scalars['GlobalId']['input']>;
+  /** An array of scopes granted to the store */
+  scopes?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Shopify storefront access token for the store */
   storefrontAccessToken?: InputMaybe<Scalars['String']['input']>;
 };

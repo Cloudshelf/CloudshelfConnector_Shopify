@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
+import { Entity, PrimaryKey, Property, types } from "@mikro-orm/core";
 
 @Entity()
 export class ShopifyStore {
@@ -17,4 +17,7 @@ export class ShopifyStore {
 
   @Property({ type: "text", nullable: true })
   storefrontToken: string | null;
+
+  @Property({ type: types.array, default: [] })
+  scopes!: string[];
 }

@@ -73,15 +73,15 @@ dotenv.config();
         return;
       }
       // Store access token!
-      const store = await Container.shopifyStoreService.findStoreByDomain(
-        session?.shop ?? "",
+      // const store = await Container.shopifyStoreService.findStoreByDomain(
+      //   session?.shop ?? "",
+      // );
+
+      await Container.shopifyStoreService.upsertStore(
+        session.shop,
+        session.accessToken,
+        session.scope?.split(",") ?? [],
       );
-      if (!store) {
-        await Container.shopifyStoreService.createStore(
-          session.shop,
-          session.accessToken,
-        );
-      }
     }
 
     res.end(`cb`);
@@ -171,13 +171,15 @@ dotenv.config();
       );
 
       if (session) {
-        const store =
-          await Container.shopifyStoreService.findStoreByDomain(shop);
+        const store = await Container.shopifyStoreService.findStoreByDomain(
+          shop,
+        );
         if (!store && session.accessToken) {
           console.log("Creating store (again?)");
-          await Container.shopifyStoreService.createStore(
+          await Container.shopifyStoreService.upsertStore(
             shop,
             session.accessToken,
+            session.scope?.split(",") ?? [],
           );
         }
       }

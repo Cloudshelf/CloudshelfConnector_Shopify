@@ -30,12 +30,13 @@ import { createHmac } from "../../utils/hmac";
 import { CloudshelfClientFactory } from "../cloudshelfClient/CloudshelfClient";
 
 export class ShopifyStoreService {
-  async createStore(domain: string, accessToken: string) {
+  async upsertStore(domain: string, accessToken: string, scopes: string[]) {
     const em = Container.entityManager.fork();
     const existingStore = await this.findStoreByDomain(domain);
+    let storefrontAccessToken: string | null = null;
 
     if (!existingStore) {
-      const storefrontAccessToken = await this.createAccessTokenIfNeeded(
+      storefrontAccessToken = await this.createAccessTokenIfNeeded(
         domain,
         accessToken,
       );
@@ -43,40 +44,49 @@ export class ShopifyStoreService {
       store.domain = domain;
       store.accessToken = accessToken;
       store.storefrontToken = storefrontAccessToken;
+      store.scopes = scopes;
       await em.upsert(ShopifyStore, store);
       await em.flush();
-
-      const timestamp = new Date().getTime().toString();
-      const mutationTuple = await CloudshelfClientFactory.getClient().mutate<
-        UpsertStoreMutation,
-        UpsertStoreMutationVariables
-      >({
-        mutation: UpsertStoreDocument,
-        variables: {
-          input: {
-            domain,
-            accessToken,
-            storefrontAccessToken,
-          },
-          hmac: createHmac(accessToken, timestamp),
-          nonce: timestamp,
-        },
-      });
-
-      if (mutationTuple.errors || !mutationTuple.data) {
-        console.log("Failed to create store in cloudshelf");
-      }
-
-      const authenticatedClient = CloudshelfClientFactory.getClient(domain);
-      const queryTuple = await authenticatedClient.query<
-        ProductsTestQuery,
-        ProductsTestQueryVariables
-      >({
-        query: ProductsTestDocument,
-      });
-
-      await this.getProducts(domain);
+    } else {
+      //Ensure that we keep an upto date access token for the store
+      existingStore.accessToken = accessToken;
+      existingStore.scopes = scopes;
+      await em.upsert(ShopifyStore, existingStore);
+      await em.flush();
     }
+
+    //report token to Cloudshelf API
+    const timestamp = new Date().getTime().toString();
+    const mutationTuple = await CloudshelfClientFactory.getClient().mutate<
+      UpsertStoreMutation,
+      UpsertStoreMutationVariables
+    >({
+      mutation: UpsertStoreDocument,
+      variables: {
+        input: {
+          domain,
+          accessToken,
+          storefrontAccessToken,
+          scopes,
+        },
+        hmac: createHmac(accessToken, timestamp),
+        nonce: timestamp,
+      },
+    });
+
+    if (mutationTuple.errors || !mutationTuple.data) {
+      console.log("Failed to create store in cloudshelf");
+    }
+
+    const authenticatedClient = CloudshelfClientFactory.getClient(domain);
+    const queryTuple = await authenticatedClient.query<
+      ProductsTestQuery,
+      ProductsTestQueryVariables
+    >({
+      query: ProductsTestDocument,
+    });
+
+    await this.getProducts(domain);
   }
 
   async findStoreByDomain(domain: string): Promise<ShopifyStore | null> {

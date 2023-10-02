@@ -22,18 +22,25 @@ import {
   ProductsTestDocument,
   ProductsTestQuery,
   ProductsTestQueryVariables,
+  ThemeInput,
   UpsertStoreDocument,
   UpsertStoreMutation,
   UpsertStoreMutationVariables,
+  UpsertThemeDocument,
+  UpsertThemeMutation,
+  UpsertThemeMutationVariables,
 } from "../../graphql/cloudshelf/generated/cloudshelf";
 import { createHmac } from "../../utils/hmac";
 import { CloudshelfClientFactory } from "../cloudshelfClient/CloudshelfClient";
+import { createThemeJob } from "../queue/queues/theme/theme.job.functions";
+import { createLocationJob } from "../queue/queues/location/location.job.functions";
 
 export class ShopifyStoreService {
   async upsertStore(domain: string, accessToken: string, scopes: string[]) {
     const em = Container.entityManager.fork();
     const existingStore = await this.findStoreByDomain(domain);
     let storefrontAccessToken: string | null = null;
+    let newStore = false;
 
     if (!existingStore) {
       storefrontAccessToken = await this.createAccessTokenIfNeeded(
@@ -47,6 +54,7 @@ export class ShopifyStoreService {
       store.scopes = scopes;
       await em.upsert(ShopifyStore, store);
       await em.flush();
+      newStore = true;
     } else {
       //Ensure that we keep an upto date access token for the store
       existingStore.accessToken = accessToken;
@@ -78,15 +86,10 @@ export class ShopifyStoreService {
       console.log("Failed to create store in cloudshelf");
     }
 
-    const authenticatedClient = CloudshelfClientFactory.getClient(domain);
-    const queryTuple = await authenticatedClient.query<
-      ProductsTestQuery,
-      ProductsTestQueryVariables
-    >({
-      query: ProductsTestDocument,
-    });
-
-    await this.getProducts(domain);
+    if (newStore) {
+      await createThemeJob(domain);
+      await createLocationJob(domain);
+    }
   }
 
   async findStoreByDomain(domain: string): Promise<ShopifyStore | null> {
@@ -170,11 +173,11 @@ export class ShopifyStoreService {
     }
   }
 
-  async getTheme(domain: string) {
+  async getThemeFromShopify(domain: string) {
     const client = new ShopifyStorefrontClient(domain);
     const apollo = await client.apollo();
     if (!apollo) {
-      return [];
+      return null;
     }
     const query = await apollo.query<
       GetThemeInformationQuery,
@@ -183,6 +186,22 @@ export class ShopifyStoreService {
       query: GetThemeInformationDocument,
     });
 
-    console.log(query.data);
+    return query.data.shop ?? null;
+  }
+
+  async upsertThemeToCloudshelf(domain: string, input: ThemeInput) {
+    const client = CloudshelfClientFactory.getClient(domain);
+
+    const mutationTuple = await client.mutate<
+      UpsertThemeMutation,
+      UpsertThemeMutationVariables
+    >({
+      mutation: UpsertThemeDocument,
+      variables: {
+        input,
+      },
+    });
+
+    //TODO: Handle errors
   }
 }

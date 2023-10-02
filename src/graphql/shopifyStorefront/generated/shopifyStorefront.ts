@@ -6875,6 +6875,7 @@ export enum WeightUnit {
 export const GetThemeInformationDocument = gql`
     query GetThemeInformation {
   shop {
+    id
     brand {
       logo {
         image {
@@ -6898,4 +6899,4 @@ export const GetThemeInformationDocument = gql`
 export type GetThemeInformationQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetThemeInformationQuery = { __typename?: 'QueryRoot', shop: { __typename?: 'Shop', brand?: { __typename?: 'Brand', logo?: { __typename?: 'MediaImage', image?: { __typename?: 'Image', url: any } | null } | null, colors: { __typename?: 'BrandColors', primary: Array<{ __typename?: 'BrandColorGroup', background?: any | null, foreground?: any | null }>, secondary: Array<{ __typename?: 'BrandColorGroup', background?: any | null, foreground?: any | null }> } } | null } };
+export type GetThemeInformationQuery = { __typename?: 'QueryRoot', shop: { __typename?: 'Shop', id: string, brand?: { __typename?: 'Brand', logo?: { __typename?: 'MediaImage', image?: { __typename?: 'Image', url: any } | null } | null, colors: { __typename?: 'BrandColors', primary: Array<{ __typename?: 'BrandColorGroup', background?: any | null, foreground?: any | null }>, secondary: Array<{ __typename?: 'BrandColorGroup', background?: any | null, foreground?: any | null }> } } | null } };

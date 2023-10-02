@@ -1,4 +1,7 @@
 export const enum QueueNames {
   TEST = "TEST",
-  POST_INSTALL_THEME = "POST_INSTALL_THEME",
+  THEME = "THEME",
+  LOCATION = "LOCATION",
+  PRODUCT = "PRODUCT",
+  PRODUCT_GROUP = "PRODUCT_GROUP",
 }

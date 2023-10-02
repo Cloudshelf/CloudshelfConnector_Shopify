@@ -3046,6 +3046,19 @@ export const ProductsTestDocument = gql`
   }
 }
     `;
+export const UpsertThemeDocument = gql`
+    mutation upsertTheme($input: ThemeInput!) {
+  upsertTheme(input: $input) {
+    userErrors {
+      code
+      message
+    }
+    theme {
+      id
+    }
+  }
+}
+    `;
 export type ExchangeTokenQueryVariables = Exact<{
   token: Scalars['String']['input'];
 }>;
@@ -3066,3 +3079,10 @@ export type ProductsTestQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type ProductsTestQuery = { __typename?: 'Query', products: { __typename?: 'ProductPaginatedPayload', edges?: Array<{ __typename?: 'ProductEdge', node?: { __typename?: 'Product', id: any } | null }> | null, pageInfo?: { __typename?: 'ProductPageInfo', hasNextPage: boolean, hasPreviousPage: boolean, endCursor?: string | null, startCursor?: string | null } | null } };
+
+export type UpsertThemeMutationVariables = Exact<{
+  input: ThemeInput;
+}>;
+
+
+export type UpsertThemeMutation = { __typename?: 'Mutation', upsertTheme: { __typename?: 'ThemeUpsertPayload', userErrors: Array<{ __typename?: 'UserError', code: UserErrorCode, message: string }>, theme?: { __typename?: 'Theme', id: any } | null } };

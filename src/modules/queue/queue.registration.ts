@@ -3,9 +3,16 @@ import { Container } from "../../container";
 import { testQueueProcessor } from "./queues/test/test.queue.processor";
 import { themeQueueProcessor } from "./queues/theme/theme.queue.processor";
 import { locationQueueProcessor } from "./queues/location/location.queue.processor";
-import { productQueueProcessor } from "./queues/product/product.queue.processor";
-import { productGroupQueueProcessor } from "./queues/productgroup/productgroup.queue.processor";
+import {
+  productQueueProcessor,
+  productTriggerQueueProcessor,
+} from "./queues/product/product.queue.processor";
+import {
+  productGroupQueueProcessor,
+  productGroupTriggerQueueProcessor,
+} from "./queues/productgroup/productgroup.queue.processor";
 import { createThemeJob } from "./queues/theme/theme.job.functions";
+import { createProductTriggerJob } from "./queues/product/product.job.functions";
 
 export const registerQueues = async () => {
   console.debug("Registering queues...");
@@ -26,14 +33,26 @@ export const registerQueues = async () => {
   );
 
   await Container.queueService.registerQueue(
-    QueueNames.PRODUCT,
+    QueueNames.PRODUCT_TRIGGER,
+    productTriggerQueueProcessor,
+  );
+
+  await Container.queueService.registerQueue(
+    QueueNames.PRODUCT_PROCESSOR,
     productQueueProcessor,
   );
 
   await Container.queueService.registerQueue(
-    QueueNames.PRODUCT_GROUP,
+    QueueNames.PRODUCT_GROUP_TRIGGER,
+    productGroupTriggerQueueProcessor,
+  );
+
+  await Container.queueService.registerQueue(
+    QueueNames.PRODUCT_GROUP_PROCESSOR,
     productGroupQueueProcessor,
   );
 
   console.debug("Queues registration complete");
+
+  await createProductTriggerJob("cs-connector-store.myshopify.com");
 };

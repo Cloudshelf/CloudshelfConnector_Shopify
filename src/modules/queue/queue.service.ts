@@ -1,5 +1,12 @@
 import { createClient, RedisClientType } from "redis";
-import { DelayedError, JobsOptions, Processor, Queue, Worker } from "bullmq";
+import {
+  DelayedError,
+  Job,
+  JobsOptions,
+  Processor,
+  Queue,
+  Worker,
+} from "bullmq";
 import { QueueNames } from "./queue.names.const";
 
 export class QueueService {
@@ -48,8 +55,11 @@ export class QueueService {
             throw new DelayedError();
             return;
           }
-          console.log(`Lock definitely acquired for job ${job.data.id}`);
+          console.log(
+            `Lock definitely acquired for job '${job.name}:${job.id}', lockId: ${job.data.lockId}`,
+          );
         }
+
         let res: any = null;
         try {
           res = await processor(job);
@@ -62,15 +72,20 @@ export class QueueService {
           await job.updateData({ ...job.updateData, failCount: failCount + 1 });
           await job.retry();
           if (job.data.lockId) {
-            console.log(`Releasing lock for job ${job.data.id}`);
+            console.log(
+              `Releasing lock for job '${job.name}:${job.id}', lockId: ${job.data.lockId}`,
+            );
             await this.releaseLock(job.data.lockId);
           }
         }
 
         if (job.data.lockId) {
-          console.log(`Releasing lock for job ${job.data.id}`);
+          console.log(
+            `Releasing lock for job '${job.name}:${job.id}', lockId: ${job.data.lockId}`,
+          );
           await this.releaseLock(job.data.lockId);
         }
+
         return res;
       },
       {
@@ -104,8 +119,40 @@ export class QueueService {
     await this.redis.del(`lock:${id}`);
   }
 
-  async addJob(queueName: string, data?: any, options?: JobsOptions) {
+  async addJob<T>(queueName: string, data?: T, options?: JobsOptions) {
     const queue = this.queues[queueName];
     await queue.add(queueName, data, options);
+  }
+
+  async findJobForDomain<T>(
+    queueName: string,
+    domain: string,
+  ): Promise<Job<T>> {
+    const queue = this.queues[queueName];
+
+    const allPendingJobs = await queue.getJobs([
+      "waiting",
+      "delayed",
+      "prioritized",
+    ]);
+
+    const pendingJobs = allPendingJobs.filter(
+      (job) => job.data.domain === domain,
+    );
+
+    if (pendingJobs.length > 1) {
+      console.error(
+        `More that one existing job for queue '${queueName}' job found for domain '${domain}'. This should not happen, cancelling all but one job.`,
+      );
+      await Promise.all(
+        pendingJobs.map(async (job, index) => {
+          if (index > 0) {
+            await job.remove();
+          }
+        }),
+      );
+    }
+
+    return pendingJobs[0];
   }
 }

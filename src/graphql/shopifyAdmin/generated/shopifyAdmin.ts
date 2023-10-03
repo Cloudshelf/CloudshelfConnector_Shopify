@@ -5129,7 +5129,7 @@ export enum CurrencyCode {
    * @deprecated `VEF` is deprecated. Use `VES` available from version `2020-10` onwards instead.
    */
   Vef = 'VEF',
-  /** Venezuelan Bolivares (VES). */
+  /** Venezuelan Bolivares Soberanos (VES). */
   Ves = 'VES',
   /** Vietnamese đồng (VND). */
   Vnd = 'VND',
@@ -15329,9 +15329,9 @@ export type LocationAddress = {
   countryCode?: Maybe<Scalars['String']['output']>;
   /** A formatted version of the address for the location. */
   formatted: Array<Scalars['String']['output']>;
-  /** The latitude coordinates of the location. */
+  /** The approximate latitude coordinates of the location. */
   latitude?: Maybe<Scalars['Float']['output']>;
-  /** The longitude coordinates of the location. */
+  /** The approximate longitude coordinates of the location. */
   longitude?: Maybe<Scalars['Float']['output']>;
   /** The phone number of the location. */
   phone?: Maybe<Scalars['String']['output']>;
@@ -15792,8 +15792,9 @@ export type Market = Node & {
    * The market’s web presence, which defines its SEO strategy. This can be a different domain,
    * subdomain, or subfolders of the primary domain. Each web presence comprises one or more
    * language variants. If a market doesn't have its own web presence, then the market is accessible on the
-   * shop’s primary domain using [country
+   * primary market's domains using [country
    * selectors](https://shopify.dev/themes/internationalization/multiple-currencies-languages#the-country-selector).
+   * If it's the primary market and it has multiple web presences, then this field will return the primary domain web presence.
    *
    */
   webPresence?: Maybe<MarketWebPresence>;
@@ -18787,9 +18788,9 @@ export type Mutation = {
    * (available as of the `2023-04` API version),
    * or specify that the original fulfillment order contains line items which have already been fulfilled.
    *
-   * If the new location is already assigned to another active fulfillment order, on the same order,
-   * then the line items are moved to the existing fulfillment order.
-   * Otherwise, a new fulfillment order is created for the new location, and the line items are moved to the new location.
+   * If the new location is already assigned to another active fulfillment order, on the same order, then
+   * a new fulfillment order is created. The existing fulfillment order is closed and line items are recreated
+   * in a new fulfillment order.
    *
    */
   fulfillmentOrderMove?: Maybe<FulfillmentOrderMovePayload>;
@@ -21278,7 +21279,7 @@ export type MutationSellingPlanGroupRemoveProductsArgs = {
 /** The schema's entry point for all mutation operations. */
 export type MutationSellingPlanGroupUpdateArgs = {
   id: Scalars['ID']['input'];
-  input?: InputMaybe<SellingPlanGroupInput>;
+  input: SellingPlanGroupInput;
 };
 
 
@@ -26789,7 +26790,7 @@ export type ProductVariantInput = {
   inventoryItem?: InputMaybe<InventoryItemInput>;
   /** Whether customers are allowed to place an order for the product variant when it's out of stock. */
   inventoryPolicy?: InputMaybe<ProductVariantInventoryPolicy>;
-  /** The inventory quantities at each location where the variant is stocked. */
+  /** The inventory quantities at each location where the variant is stocked. Supported as input with the `productVariantCreate` mutation only. */
   inventoryQuantities?: InputMaybe<Array<InventoryLevelInput>>;
   /** The URL of the media to associate with the variant. This field can only be used in mutations that create media images and must match one of the URLs being created on the product. This field only accepts one value. */
   mediaSrc?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -27053,6 +27054,7 @@ export type ProductVariantsBulkInput = {
   /**
    * The inventory quantities at each location where the variant is stocked. The number of elements
    * in the array of inventory quantities can't exceed the amount specified for the plan.
+   * Supported as input with the `productVariantsBulkCreate` mutation only.
    *
    */
   inventoryQuantities?: InputMaybe<Array<InventoryLevelInput>>;
@@ -27774,11 +27776,21 @@ export type QueryRoot = {
   giftCards: GiftCardConnection;
   /** The total number of gift cards issued for the shop. */
   giftCardsCount: Scalars['UnsignedInt64']['output'];
-  /** Returns an `InventoryItem` object by ID. */
+  /**
+   * Returns an
+   * [InventoryItem](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem)
+   * object by ID.
+   *
+   */
   inventoryItem?: Maybe<InventoryItem>;
   /** Returns a list of inventory items. */
   inventoryItems: InventoryItemConnection;
-  /** Returns an `InventoryLevel` object by ID. */
+  /**
+   * Returns an
+   * [InventoryLevel](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryLevel)
+   * object by ID.
+   *
+   */
   inventoryLevel?: Maybe<InventoryLevel>;
   /**
    * Returns a Job resource by ID. Used to check the status of internal jobs and any applicable changes.
@@ -30777,7 +30789,11 @@ export type SellingPlanEdge = {
   node: SellingPlan;
 };
 
-/** The fixed selling plan billing policy. */
+/**
+ * The fixed selling plan billing policy defines how much of the price of the product will be billed to customer
+ * at checkout. If there is an outstanding balance, it determines when it will be paid.
+ *
+ */
 export type SellingPlanFixedBillingPolicy = {
   __typename?: 'SellingPlanFixedBillingPolicy';
   /** The checkout charge when the full amount isn't charged at checkout. */
@@ -32863,7 +32879,11 @@ export type ShopResourceLimits = {
   maxProductVariants: Scalars['Int']['output'];
   /** Whether the shop has reached the limit of the number of URL redirects it can make for resources. */
   redirectLimitReached: Scalars['Boolean']['output'];
-  /** The maximum number of variants allowed per shop. If the shop has unlimited SKUs, then the quantity used can't be retrieved. */
+  /**
+   * The maximum number of variants allowed per shop. If the shop has unlimited SKUs, then the quantity used can't be retrieved.
+   * @deprecated This field is deprecated. After the 2023-10 version, we no longer set limits on number of SKUs per shop. Use `maxProductVariants` instead.
+   *
+   */
   skuResourceLimits: ResourceLimit;
 };
 
@@ -33719,10 +33739,7 @@ export enum StaffMemberPermission {
   MarketingSection = 'MARKETING_SECTION',
   /** The staff member can view, create, update, delete, and cancel orders, and receive order notifications. The staff member can still create draft orders without this permission. */
   Orders = 'ORDERS',
-  /**
-   * The staff member can view the Overview and Live view pages,
-   *             which include sales information, and other shop and sales channels data.
-   */
+  /** The staff member can view the Overview and Live view pages, which include sales information, and other shop and sales channels data. */
   Overviews = 'OVERVIEWS',
   /** The staff member can view, create, update, publish, and delete blog posts and pages. */
   Pages = 'PAGES',
@@ -35032,7 +35049,11 @@ export type SubscriptionDeliveryMethodInput = {
   shipping?: InputMaybe<SubscriptionDeliveryMethodShippingInput>;
 };
 
-/** A local delivery method, which includes a mailing address and a local delivery option. */
+/**
+ * A subscription delivery method for local delivery.
+ * The other subscription delivery methods can be found in the `SubscriptionDeliveryMethod` union type.
+ *
+ */
 export type SubscriptionDeliveryMethodLocalDelivery = {
   __typename?: 'SubscriptionDeliveryMethodLocalDelivery';
   /** The address to deliver to. */
@@ -37662,3 +37683,61 @@ export type DeliveryProfileUpdatePayload = {
   /** The list of errors that occurred from executing the mutation. */
   userErrors: Array<UserError>;
 };
+
+
+export const CreateStorefrontAccessTokenDocument = gql`
+    mutation CreateStorefrontAccessToken($input: StorefrontAccessTokenInput!) {
+  storefrontAccessTokenCreate(input: $input) {
+    storefrontAccessToken {
+      accessToken
+      title
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+    `;
+export const GetStorefrontAccessTokensDocument = gql`
+    query GetStorefrontAccessTokens {
+  shop {
+    storefrontAccessTokens(first: 10) {
+      edges {
+        node {
+          id
+          title
+          accessToken
+        }
+      }
+    }
+  }
+}
+    `;
+export const GetProductsDocument = gql`
+    query GetProducts {
+  products(first: 5) {
+    edges {
+      node {
+        id
+      }
+    }
+  }
+}
+    `;
+export type CreateStorefrontAccessTokenMutationVariables = Exact<{
+  input: StorefrontAccessTokenInput;
+}>;
+
+
+export type CreateStorefrontAccessTokenMutation = { __typename?: 'Mutation', storefrontAccessTokenCreate?: { __typename?: 'StorefrontAccessTokenCreatePayload', storefrontAccessToken?: { __typename?: 'StorefrontAccessToken', accessToken: string, title: string } | null, userErrors: Array<{ __typename?: 'UserError', field?: Array<string> | null, message: string }> } | null };
+
+export type GetStorefrontAccessTokensQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetStorefrontAccessTokensQuery = { __typename?: 'QueryRoot', shop: { __typename?: 'Shop', storefrontAccessTokens: { __typename?: 'StorefrontAccessTokenConnection', edges: Array<{ __typename?: 'StorefrontAccessTokenEdge', node: { __typename?: 'StorefrontAccessToken', id: string, title: string, accessToken: string } }> } } };
+
+export type GetProductsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetProductsQuery = { __typename?: 'QueryRoot', products: { __typename?: 'ProductConnection', edges: Array<{ __typename?: 'ProductEdge', node: { __typename?: 'Product', id: string } }> } };

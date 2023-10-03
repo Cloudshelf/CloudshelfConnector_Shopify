@@ -1,23 +1,38 @@
-import { injectable } from "tsyringe";
 import {
   ApolloClient,
+  ApolloLink,
+  createHttpLink,
+  from,
   InMemoryCache,
-  NormalizedCacheObject,
 } from "@apollo/client/core";
+import { setContext } from "@apollo/client/link/context";
+import { createHmac } from "../../utils/hmac";
 
-@injectable()
-export class CloudshelfClient {
-  private readonly client: ApolloClient<NormalizedCacheObject>;
-  constructor() {
-    this.client = new ApolloClient({
-      uri: "https://development.api.cloudshelf.ai/graphql",
-      cache: new InMemoryCache(),
-      // Header
-      headers: {},
+export class CloudshelfClientFactory {
+  public static getClient(domain?: string) {
+    const httpLink = createHttpLink({
+      uri: process.env.CLOUDSHELF_API_URL!,
     });
-  }
 
-  public getClient() {
-    return this.client;
+    const authLink = new ApolloLink((operation, forward) => {
+      const timestamp = new Date().getTime().toString();
+      const hmac = domain ? createHmac(domain, timestamp) : "";
+
+      operation.setContext(({ headers = {} }) => ({
+        headers: {
+          ...headers,
+          ...(domain
+            ? { "x-store-domain": domain, "x-hmac": hmac, "x-nonce": timestamp }
+            : {}),
+        },
+      }));
+
+      return forward(operation);
+    });
+
+    return new ApolloClient({
+      cache: new InMemoryCache(),
+      link: from([authLink, httpLink]),
+    });
   }
 }

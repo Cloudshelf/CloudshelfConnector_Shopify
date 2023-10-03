@@ -1,0 +1,15 @@
+query ProductsTest {
+    products(first: 3) {
+        edges {
+            node {
+                id
+            }
+        }
+        pageInfo {
+            hasNextPage
+            hasPreviousPage
+            endCursor
+            startCursor
+        }
+    }
+}

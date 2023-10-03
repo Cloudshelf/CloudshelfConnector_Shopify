@@ -137,3 +137,6 @@ dist
 
 # GraphQL Schemas - for development only
 *.schema.json
+
+# MikroORM
+.snapshot*

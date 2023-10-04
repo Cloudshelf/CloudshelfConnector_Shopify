@@ -3042,6 +3042,32 @@ export const UpsertStoreDocument = gql`
   }
 }
     `;
+export const UpsertProductsDocument = gql`
+    mutation upsertProducts($input: [ProductInput!]!) {
+  upsertProducts(input: $input) {
+    products {
+      id
+    }
+    userErrors {
+      code
+      message
+    }
+  }
+}
+    `;
+export const UpsertProductVariantsDocument = gql`
+    mutation upsertProductVariants($inputs: [ProductVariantInput!]!, $productId: ID!) {
+  upsertProductVariants(inputs: $inputs, productId: $productId) {
+    productVariants {
+      id
+    }
+    userErrors {
+      code
+      message
+    }
+  }
+}
+    `;
 export const UpsertThemeDocument = gql`
     mutation upsertTheme($input: ThemeInput!) {
   upsertTheme(input: $input) {
@@ -3094,6 +3120,21 @@ export type UpsertStoreMutationVariables = Exact<{
 
 
 export type UpsertStoreMutation = { __typename?: 'Mutation', upsertShopifyOrganisation: { __typename?: 'OrganisationUpsertPayload', organisation?: { __typename?: 'Organisation', id: any } | null, userErrors: Array<{ __typename?: 'UserError', message: string, code: UserErrorCode }> } };
+
+export type UpsertProductsMutationVariables = Exact<{
+  input: Array<ProductInput> | ProductInput;
+}>;
+
+
+export type UpsertProductsMutation = { __typename?: 'Mutation', upsertProducts: { __typename?: 'ProductUpsertPayload', products: Array<{ __typename?: 'Product', id: any }>, userErrors: Array<{ __typename?: 'UserError', code: UserErrorCode, message: string }> } };
+
+export type UpsertProductVariantsMutationVariables = Exact<{
+  inputs: Array<ProductVariantInput> | ProductVariantInput;
+  productId: Scalars['ID']['input'];
+}>;
+
+
+export type UpsertProductVariantsMutation = { __typename?: 'Mutation', upsertProductVariants: { __typename?: 'ProductVariantUpsertPayload', productVariants: Array<{ __typename?: 'ProductVariant', id: any }>, userErrors: Array<{ __typename?: 'UserError', code: UserErrorCode, message: string }> } };
 
 export type UpsertThemeMutationVariables = Exact<{
   input: ThemeInput;

@@ -1,0 +1,23 @@
+mutation upsertProducts($input: [ProductInput!]!) {
+    upsertProducts(input: $input) {
+        products {
+            id
+        }
+        userErrors {
+            code
+            message
+        }
+    }
+}
+
+mutation upsertProductVariants($inputs: [ProductVariantInput!]!, $productId: ID!) {
+    upsertProductVariants(inputs: $inputs, productId: $productId) {
+        productVariants {
+            id
+        }
+        userErrors {
+            code
+            message
+        }
+    }
+}

@@ -52,14 +52,18 @@ export const createProductGroupTriggerJob = async (
   }
 };
 
-export const createProductGroupJob = async (domain: string): Promise<void> => {
+export const createProductGroupJob = async (
+  domain: string,
+  bulkOperationId: string,
+  groupIds: string[],
+): Promise<void> => {
   //Need to handle how we store this data, we used to do this in a table called bulk ops...
   const jobPayload: ProductGroupJobData = {
     domain,
     lockId: domain,
     isFirstSync: false,
-    remoteBulkOperationId: "",
-    groupIds: [],
+    remoteBulkOperationId: bulkOperationId,
+    groupIds: groupIds,
   };
 
   await Container.queueService.addJob(

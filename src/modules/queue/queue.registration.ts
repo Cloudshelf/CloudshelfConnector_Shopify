@@ -55,6 +55,6 @@ export const registerQueues = async () => {
 
   console.debug("Queues registration complete");
 
-  await createLocationJob("cs-connector-store.myshopify.com");
+  // await createLocationJob("cs-connector-store.myshopify.com");
   // await createProductTriggerJob("cs-connector-store.myshopify.com");
 };

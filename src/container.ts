@@ -4,6 +4,8 @@ import { PostgreSqlMikroORM } from "@mikro-orm/postgresql/PostgreSqlMikroORM";
 import { ShopifyStoreService } from "./modules/shopifyStore/shopify-store.service";
 import { AuthService } from "./modules/auth/auth.service";
 import { QueueService } from "./modules/queue/queue.service";
+import { BulkOperationService } from "./modules/bulkOperation/bulk-opertation.service";
+import { BulkOperationController } from "./modules/bulkOperation/bulk-operation.controller";
 
 export class Container {
   private static _initialised = false;
@@ -12,6 +14,7 @@ export class Container {
   private static _shopifyStoreService: ShopifyStoreService;
   private static _authService: AuthService;
   private static _queueService: QueueService;
+  private static _bulkOperationService: BulkOperationService;
 
   static async initialise() {
     console.debug("Initialising container...");
@@ -21,6 +24,7 @@ export class Container {
     this._shopifyStoreService = new ShopifyStoreService();
     this._authService = new AuthService();
     this._queueService = new QueueService();
+    this._bulkOperationService = new BulkOperationService();
 
     this._initialised = true;
     console.debug("Container initialised");
@@ -70,5 +74,11 @@ export class Container {
     this.throwIfNotInitialised();
 
     return this._queueService;
+  }
+
+  static get bulkOperationService(): BulkOperationService {
+    this.throwIfNotInitialised();
+
+    return this._bulkOperationService;
   }
 }

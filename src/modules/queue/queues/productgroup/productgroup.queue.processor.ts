@@ -7,7 +7,7 @@ export const productGroupTriggerQueueProcessor = async (
   await job.log("Product Group Trigger completed. Step 3");
   console.log("Product Group Trigger completed. Step 3");
 
-  await createProductGroupJob(job.data.domain);
+  // await createProductGroupJob(job.data.domain);
 };
 
 export const productGroupQueueProcessor = async (job: Job): Promise<void> => {

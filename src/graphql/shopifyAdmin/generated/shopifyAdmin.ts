@@ -1919,10 +1919,7 @@ export type CalculatedManualDiscountApplication = CalculatedDiscountApplication 
  */
 export type CalculatedOrder = Node & {
   __typename?: 'CalculatedOrder';
-  /**
-   * Returns only the new discount applications being added to the order in the current edit.
-   *
-   */
+  /** Returns only the new discount applications being added to the order in the current edit. */
   addedDiscountApplications: CalculatedDiscountApplicationConnection;
   /**
    * Returns only the new line items being added to the order during the current edit.
@@ -37684,7 +37681,23 @@ export type DeliveryProfileUpdatePayload = {
   userErrors: Array<UserError>;
 };
 
-
+export const LocationAddressDetails = gql`
+    fragment LocationAddressDetails on LocationAddress {
+  formatted
+  phone
+  countryCode
+}
+    `;
+export const LocationDetails = gql`
+    fragment LocationDetails on Location {
+  id
+  name
+  isActive
+  address {
+    ...LocationAddressDetails
+  }
+}
+    ${LocationAddressDetails}`;
 export const CreateStorefrontAccessTokenDocument = gql`
     mutation CreateStorefrontAccessToken($input: StorefrontAccessTokenInput!) {
   storefrontAccessTokenCreate(input: $input) {
@@ -37714,6 +37727,21 @@ export const GetStorefrontAccessTokensDocument = gql`
   }
 }
     `;
+export const GetLocationsDocument = gql`
+    query getLocations($after: String) {
+  locations(first: 10, after: $after, includeLegacy: false, includeInactive: true) {
+    edges {
+      cursor
+      node {
+        ...LocationDetails
+      }
+    }
+    pageInfo {
+      hasNextPage
+    }
+  }
+}
+    ${LocationDetails}`;
 export const GetProductsDocument = gql`
     query GetProducts {
   products(first: 5) {
@@ -37736,6 +37764,17 @@ export type GetStorefrontAccessTokensQueryVariables = Exact<{ [key: string]: nev
 
 
 export type GetStorefrontAccessTokensQuery = { __typename?: 'QueryRoot', shop: { __typename?: 'Shop', storefrontAccessTokens: { __typename?: 'StorefrontAccessTokenConnection', edges: Array<{ __typename?: 'StorefrontAccessTokenEdge', node: { __typename?: 'StorefrontAccessToken', id: string, title: string, accessToken: string } }> } } };
+
+export type LocationAddressDetailsFragment = { __typename?: 'LocationAddress', formatted: Array<string>, phone?: string | null, countryCode?: string | null };
+
+export type LocationDetailsFragment = { __typename?: 'Location', id: string, name: string, isActive: boolean, address: { __typename?: 'LocationAddress', formatted: Array<string>, phone?: string | null, countryCode?: string | null } };
+
+export type GetLocationsQueryVariables = Exact<{
+  after?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type GetLocationsQuery = { __typename?: 'QueryRoot', locations: { __typename?: 'LocationConnection', edges: Array<{ __typename?: 'LocationEdge', cursor: string, node: { __typename?: 'Location', id: string, name: string, isActive: boolean, address: { __typename?: 'LocationAddress', formatted: Array<string>, phone?: string | null, countryCode?: string | null } } }>, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean } } };
 
 export type GetProductsQueryVariables = Exact<{ [key: string]: never; }>;
 

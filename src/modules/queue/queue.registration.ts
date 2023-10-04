@@ -13,6 +13,7 @@ import {
 } from "./queues/productgroup/productgroup.queue.processor";
 import { createThemeJob } from "./queues/theme/theme.job.functions";
 import { createProductTriggerJob } from "./queues/product/product.job.functions";
+import { createLocationJob } from "./queues/location/location.job.functions";
 
 export const registerQueues = async () => {
   console.debug("Registering queues...");
@@ -54,5 +55,6 @@ export const registerQueues = async () => {
 
   console.debug("Queues registration complete");
 
-  await createProductTriggerJob("cs-connector-store.myshopify.com");
+  await createLocationJob("cs-connector-store.myshopify.com");
+  // await createProductTriggerJob("cs-connector-store.myshopify.com");
 };

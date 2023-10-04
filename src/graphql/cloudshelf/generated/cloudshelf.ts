@@ -3011,6 +3011,19 @@ export type WebhookUnregisterInput = {
 };
 
 
+export const UpsertLocationsDocument = gql`
+    mutation UpsertLocations($input: [LocationInput!]!) {
+  upsertLocations(input: $input) {
+    locations {
+      id
+    }
+    userErrors {
+      code
+      message
+    }
+  }
+}
+    `;
 export const ExchangeTokenDocument = gql`
     query ExchangeToken($token: String!) {
   customTokenFromShopifySessionToken(sessionToken: $token)
@@ -3025,6 +3038,19 @@ export const UpsertStoreDocument = gql`
     userErrors {
       message
       code
+    }
+  }
+}
+    `;
+export const UpsertThemeDocument = gql`
+    mutation upsertTheme($input: ThemeInput!) {
+  upsertTheme(input: $input) {
+    userErrors {
+      code
+      message
+    }
+    theme {
+      id
     }
   }
 }
@@ -3046,19 +3072,13 @@ export const ProductsTestDocument = gql`
   }
 }
     `;
-export const UpsertThemeDocument = gql`
-    mutation upsertTheme($input: ThemeInput!) {
-  upsertTheme(input: $input) {
-    userErrors {
-      code
-      message
-    }
-    theme {
-      id
-    }
-  }
-}
-    `;
+export type UpsertLocationsMutationVariables = Exact<{
+  input: Array<LocationInput> | LocationInput;
+}>;
+
+
+export type UpsertLocationsMutation = { __typename?: 'Mutation', upsertLocations: { __typename?: 'LocationUpsertPayload', locations: Array<{ __typename?: 'Location', id: any }>, userErrors: Array<{ __typename?: 'UserError', code: UserErrorCode, message: string }> } };
+
 export type ExchangeTokenQueryVariables = Exact<{
   token: Scalars['String']['input'];
 }>;
@@ -3075,14 +3095,14 @@ export type UpsertStoreMutationVariables = Exact<{
 
 export type UpsertStoreMutation = { __typename?: 'Mutation', upsertShopifyOrganisation: { __typename?: 'OrganisationUpsertPayload', organisation?: { __typename?: 'Organisation', id: any } | null, userErrors: Array<{ __typename?: 'UserError', message: string, code: UserErrorCode }> } };
 
-export type ProductsTestQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type ProductsTestQuery = { __typename?: 'Query', products: { __typename?: 'ProductPaginatedPayload', edges?: Array<{ __typename?: 'ProductEdge', node?: { __typename?: 'Product', id: any } | null }> | null, pageInfo?: { __typename?: 'ProductPageInfo', hasNextPage: boolean, hasPreviousPage: boolean, endCursor?: string | null, startCursor?: string | null } | null } };
-
 export type UpsertThemeMutationVariables = Exact<{
   input: ThemeInput;
 }>;
 
 
 export type UpsertThemeMutation = { __typename?: 'Mutation', upsertTheme: { __typename?: 'ThemeUpsertPayload', userErrors: Array<{ __typename?: 'UserError', code: UserErrorCode, message: string }>, theme?: { __typename?: 'Theme', id: any } | null } };
+
+export type ProductsTestQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ProductsTestQuery = { __typename?: 'Query', products: { __typename?: 'ProductPaginatedPayload', edges?: Array<{ __typename?: 'ProductEdge', node?: { __typename?: 'Product', id: any } | null }> | null, pageInfo?: { __typename?: 'ProductPageInfo', hasNextPage: boolean, hasPreviousPage: boolean, endCursor?: string | null, startCursor?: string | null } | null } };

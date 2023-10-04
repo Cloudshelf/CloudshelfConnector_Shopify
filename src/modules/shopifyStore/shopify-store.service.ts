@@ -4,12 +4,16 @@ import {
   CreateStorefrontAccessTokenDocument,
   CreateStorefrontAccessTokenMutation,
   CreateStorefrontAccessTokenMutationVariables,
+  GetLocationsDocument,
+  GetLocationsQuery,
+  GetLocationsQueryVariables,
   GetProductsDocument,
   GetProductsQuery,
   GetProductsQueryVariables,
   GetStorefrontAccessTokensDocument,
   GetStorefrontAccessTokensQuery,
   GetStorefrontAccessTokensQueryVariables,
+  LocationDetailsFragment,
 } from "../../graphql/shopifyAdmin/generated/shopifyAdmin";
 import { ShopifyStorefrontClient } from "../shopifyClient/ShopifyStorefrontClient";
 import {
@@ -19,10 +23,14 @@ import {
 } from "../../graphql/shopifyStorefront/generated/shopifyStorefront";
 import { Container } from "../../container";
 import {
+  LocationInput,
   ProductsTestDocument,
   ProductsTestQuery,
   ProductsTestQueryVariables,
   ThemeInput,
+  UpsertLocationsDocument,
+  UpsertLocationsMutation,
+  UpsertLocationsMutationVariables,
   UpsertStoreDocument,
   UpsertStoreMutation,
   UpsertStoreMutationVariables,
@@ -34,6 +42,7 @@ import { createHmac } from "../../utils/hmac";
 import { CloudshelfClientFactory } from "../cloudshelfClient/CloudshelfClient";
 import { createThemeJob } from "../queue/queues/theme/theme.job.functions";
 import { createLocationJob } from "../queue/queues/location/location.job.functions";
+import { ApolloQueryResult } from "@apollo/client";
 
 export class ShopifyStoreService {
   async upsertStore(domain: string, accessToken: string, scopes: string[]) {
@@ -111,6 +120,43 @@ export class ShopifyStoreService {
     });
 
     console.log(query.data);
+  }
+
+  async getLocations(domain: string) {
+    const client = new ShopifyAdminClient(domain);
+    const apollo = await client.apollo();
+    if (!apollo) {
+      return [];
+    }
+
+    let hasNextPage = true;
+    let cursor: string | null = null;
+    const locationEdges: LocationDetailsFragment[] = [];
+
+    do {
+      let query: ApolloQueryResult<GetLocationsQuery>;
+      query = await apollo.query<GetLocationsQuery, GetLocationsQueryVariables>(
+        {
+          query: GetLocationsDocument,
+          variables: {
+            after: cursor,
+          },
+        },
+      );
+
+      if (query.data.locations.edges) {
+        for (const edge of query.data.locations.edges) {
+          if (edge?.node) {
+            locationEdges.push(edge.node);
+          }
+        }
+      }
+
+      hasNextPage = query.data.locations.pageInfo.hasNextPage;
+      cursor = query.data.locations.edges?.slice(-1)[0]?.cursor ?? null;
+    } while (hasNextPage);
+
+    return locationEdges;
   }
 
   async createAccessTokenIfNeeded(storeDomain: string, accessToken: string) {
@@ -197,6 +243,22 @@ export class ShopifyStoreService {
       UpsertThemeMutationVariables
     >({
       mutation: UpsertThemeDocument,
+      variables: {
+        input,
+      },
+    });
+
+    //TODO: Handle errors
+  }
+
+  async upsertLocationsToCloudshelf(domain: string, input: LocationInput[]) {
+    const client = CloudshelfClientFactory.getClient(domain);
+
+    const mutationTuple = await client.mutate<
+      UpsertLocationsMutation,
+      UpsertLocationsMutationVariables
+    >({
+      mutation: UpsertLocationsDocument,
       variables: {
         input,
       },

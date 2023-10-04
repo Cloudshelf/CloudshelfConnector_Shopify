@@ -2,6 +2,7 @@ import { Job } from "bullmq";
 import { Container } from "../../../../container";
 import { ThemeJobData } from "./theme.job.data.type";
 import { ThemeInput } from "../../../../graphql/cloudshelf/generated/cloudshelf";
+import { gidConverter } from "../../../../utils/gidConverter";
 
 export const themeQueueProcessor = async (
   job: Job<ThemeJobData>,
@@ -20,10 +21,7 @@ export const themeQueueProcessor = async (
   }
 
   if (shopifyThemeData?.id) {
-    themeInput.id = shopifyThemeData.id.replace(
-      "gid://shopify/Shop",
-      "gid://external/ShopifyShopBrand",
-    );
+    themeInput.id = gidConverter(shopifyThemeData.id, "ShopifyShopBrand");
   }
 
   if (shopifyThemeData?.brand?.logo?.image?.url) {

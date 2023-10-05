@@ -1,5 +1,5 @@
-query ProductsTest {
-    products(first: 3) {
+query ProductsTest($first: Int!) {
+    products(first: $first) {
         edges {
             node {
                 id

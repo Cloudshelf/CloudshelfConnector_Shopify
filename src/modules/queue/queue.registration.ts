@@ -65,9 +65,9 @@ export const registerQueues = async () => {
   // await createProductJob("cs-connector-store.myshopify.com", "", []);
   // await createLocationJob("cs-connector-store.myshopify.com");
   // await createProductTriggerJob("cs-connector-store.myshopify.com");
-  await createProductGroupJob(
-    "cs-connector-store.myshopify.com",
-    "c09c07e9-9f0c-4cab-a270-e9cdc847c962",
-    [],
-  );
+  // await createProductGroupJob(
+  //   "cs-connector-store.myshopify.com",
+  //   "c09c07e9-9f0c-4cab-a270-e9cdc847c962",
+  //   [],
+  // );
 };

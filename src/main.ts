@@ -34,8 +34,8 @@ const customTokens: { [domain: string]: string } = {};
 
   app.get("/FORCE", async (req, res, next) => {
     await createThemeJob("cs-connector-store.myshopify.com");
-    // await createLocationJob("cs-connector-store.myshopify.com");
-    // await createProductTriggerJob("cs-connector-store.myshopify.com", true, []);
+    await createLocationJob("cs-connector-store.myshopify.com");
+    await createProductTriggerJob("cs-connector-store.myshopify.com", true, []);
     res.send("force test");
   });
 
@@ -273,7 +273,15 @@ const customTokens: { [domain: string]: string } = {};
 
       next();
     },
-    shopifyApp.ensureInstalledOnShop(),
+    async (req, res, next) => {
+      const shop = req.query["shop"] as string;
+
+      if (req.path.startsWith("/app/webhooks") || !shop) {
+        next();
+        return;
+      }
+      shopifyApp.ensureInstalledOnShop()(req, res, next);
+    },
     apiProxy,
   );
   ///////

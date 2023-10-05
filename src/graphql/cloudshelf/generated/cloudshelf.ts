@@ -1407,6 +1407,12 @@ export type Metaimage = {
   width?: Maybe<Scalars['Int']['output']>;
 };
 
+/** This object represents an image */
+export type MetaimageInput = {
+  preferredImage: Scalars['Boolean']['input'];
+  url: Scalars['String']['input'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   /** Adds the given list of products to the product group, if they are not already part of the product group */
@@ -2242,8 +2248,6 @@ export type ProductVariant = {
 };
 
 export type ProductVariantInput = {
-  /** An array of additional URLs of images of the product variant */
-  additionalImages?: InputMaybe<Array<Scalars['String']['input']>>;
   /** An array of attributes of the product variant */
   attributes?: InputMaybe<Array<KeyValuePairInput>>;
   /** Whether the product variant is available to purchase */
@@ -2252,14 +2256,14 @@ export type ProductVariantInput = {
   currentPrice?: InputMaybe<Scalars['Float']['input']>;
   /** The display name of the product variant */
   displayName?: InputMaybe<Scalars['String']['input']>;
-  /** The URL of the featured image of the product variant */
-  featuredImage?: InputMaybe<Scalars['String']['input']>;
   /** Use this field to provide either a Cloudshelf gid, or your own external gid. If the external gid already exists, the existing record will be updated. If the external gid does not exist, a new record will be created. */
   id?: InputMaybe<Scalars['GlobalId']['input']>;
   /** Whether the product variant is in stock */
   isInStock?: InputMaybe<Scalars['Boolean']['input']>;
   /** An array of metadata to attach to the product variant */
   metadata?: InputMaybe<Array<MetadataInput>>;
+  /** An array of images related to the product variant */
+  metaimages?: InputMaybe<Array<MetaimageInput>>;
   /** The original price of the product. If the product variant is not discounted, this should equal the original price */
   originalPrice?: InputMaybe<Scalars['Float']['input']>;
   /** The SKU of the product variant */

@@ -36,6 +36,7 @@
     "@types/node": "^20.5.0",
     "@types/oauth": "^0.9.1",
     "@types/request-promise-native": "^1.0.18",
+    "@types/uuid": "^9.0.1",
     "nodemon": "^3.0.1",
     "prettier": "^3.0.2",
     "ts-node": "^10.9.1",
@@ -53,6 +54,7 @@
     "@shopify/shopify-app-session-storage-memory": "^1.0.11",
     "@shopify/shopify-app-session-storage-postgresql": "^1.1.10",
     "@shopify/shopify-app-session-storage-redis": "^1.1.9",
+    "axios": "^1.5.1",
     "body-parser": "^1.20.2",
     "bullmq": "^4.7.3",
     "class-transformer": "^0.5.1",
@@ -67,7 +69,8 @@
     "reflect-metadata": "^0.1.13",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
-    "routing-controllers": "^0.10.4"
+    "routing-controllers": "^0.10.4",
+    "uuid": "^9.0.1"
   },
   "mikro-orm": {
     "useTsNode": true,

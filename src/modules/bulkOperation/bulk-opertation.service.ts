@@ -18,6 +18,11 @@ import {
 import { ShopifyAdminClient } from "../shopifyClient/ShopifyAdminClient";
 
 export class BulkOperationService {
+  async findOneById(id: string): Promise<BulkOperation | null> {
+    const em = Container.entityManager.fork();
+    return em.findOne(BulkOperation, { id });
+  }
+
   async findOneByShopifyId(shopifyId: string): Promise<BulkOperation | null> {
     const em = Container.entityManager.fork();
     return em.findOne(BulkOperation, { shopifyBulkOpId: shopifyId });

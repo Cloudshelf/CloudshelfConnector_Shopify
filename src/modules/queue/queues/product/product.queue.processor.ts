@@ -272,6 +272,21 @@ export const productQueueProcessor = async (
     await jobLog(job, "--- Chunk finished ---");
   }
 
+  //todo: delete products that are not in the file
+  if ((job.data.productIds ?? []).length === 0) {
+    //this was a full sync, so we can delete all ids we did not see
+    //deleteAllExcept
+  } else {
+    //this was a partial sync, so we need to delete all ids that we did not see
+
+    const productIdsWeShouldHaveSeen = job.data.productIds;
+    const productIdsWeDidNotSee = productIdsWeShouldHaveSeen.filter(
+      (p) => !allProductShopifyIdsFromThisFile.includes(p),
+    );
+
+    // deleteByIds
+  }
+
   await jobLog(job, `Deleting file /tmp/${uuid}.jsonl`);
   await fsPromises.unlink(`/tmp/${uuid}.jsonl`);
   await handleComplete();

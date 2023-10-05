@@ -25,8 +25,7 @@ const finished = promisify(stream.finished);
 export const productTriggerQueueProcessor = async (
   job: Job<ProductTriggerJobData>,
 ): Promise<void> => {
-  await job.log("productTriggerQueueProcessor Started");
-  console.log("productTriggerQueueProcessor Started");
+  await jobLog(job, "productTriggerQueueProcessor Started");
 
   const withPublicationStatus = true;
 
@@ -42,11 +41,8 @@ export const productTriggerQueueProcessor = async (
     job.data.productIds,
   );
 
-  await job.log(
-    "productTriggerQueueProcessor Complete, created bulkOp with ID:" +
-      bulkOp.id,
-  );
-  console.log(
+  await jobLog(
+    job,
     "productTriggerQueueProcessor Complete, created bulkOp with ID:" +
       bulkOp.id,
   );
@@ -65,11 +61,8 @@ export const productQueueProcessor = async (
 
   await jobLog(job, "productQueueProcessor Started");
 
-  let bulkOpIdFromJob = job.data.remoteBulkOperationId;
-  bulkOpIdFromJob = "b627c14b-3c5f-42e5-944a-bd6301d9510f";
-
   const bulkOpFromDatabase = await Container.bulkOperationService.findOneById(
-    bulkOpIdFromJob,
+    job.data.remoteBulkOperationId,
   );
 
   if (!bulkOpFromDatabase) {

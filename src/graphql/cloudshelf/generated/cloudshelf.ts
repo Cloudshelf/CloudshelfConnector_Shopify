@@ -3046,6 +3046,27 @@ export const UpsertStoreDocument = gql`
   }
 }
     `;
+export const UpsertProductGroupsDocument = gql`
+    mutation upsertProductGroups($input: [ProductGroupInput!]!) {
+  upsertProductGroups(input: $input) {
+    productGroups {
+      id
+    }
+    userErrors {
+      code
+      message
+    }
+  }
+}
+    `;
+export const UpdateProductsInProductGroupDocument = gql`
+    mutation updateProductsInProductGroup($productGroupId: GlobalId!, $productIds: [GlobalId!]!) {
+  updateProductsInProductGroup(
+    productGroupId: $productGroupId
+    productIds: $productIds
+  )
+}
+    `;
 export const UpsertProductsDocument = gql`
     mutation upsertProducts($input: [ProductInput!]!) {
   upsertProducts(input: $input) {
@@ -3124,6 +3145,21 @@ export type UpsertStoreMutationVariables = Exact<{
 
 
 export type UpsertStoreMutation = { __typename?: 'Mutation', upsertShopifyOrganisation: { __typename?: 'OrganisationUpsertPayload', organisation?: { __typename?: 'Organisation', id: any } | null, userErrors: Array<{ __typename?: 'UserError', message: string, code: UserErrorCode }> } };
+
+export type UpsertProductGroupsMutationVariables = Exact<{
+  input: Array<ProductGroupInput> | ProductGroupInput;
+}>;
+
+
+export type UpsertProductGroupsMutation = { __typename?: 'Mutation', upsertProductGroups: { __typename?: 'ProductGroupUpsertPayload', productGroups: Array<{ __typename?: 'ProductGroup', id: any }>, userErrors: Array<{ __typename?: 'UserError', code: UserErrorCode, message: string }> } };
+
+export type UpdateProductsInProductGroupMutationVariables = Exact<{
+  productGroupId: Scalars['GlobalId']['input'];
+  productIds: Array<Scalars['GlobalId']['input']> | Scalars['GlobalId']['input'];
+}>;
+
+
+export type UpdateProductsInProductGroupMutation = { __typename?: 'Mutation', updateProductsInProductGroup: boolean };
 
 export type UpsertProductsMutationVariables = Exact<{
   input: Array<ProductInput> | ProductInput;

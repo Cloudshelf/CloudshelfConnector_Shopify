@@ -17,6 +17,10 @@ import {
   createProductTriggerJob,
 } from "./queues/product/product.job.functions";
 import { createLocationJob } from "./queues/location/location.job.functions";
+import {
+  createProductGroupJob,
+  createProductGroupTriggerJob,
+} from "./queues/productgroup/productgroup.job.functions";
 
 export const registerQueues = async () => {
   console.debug("Registering queues...");
@@ -61,4 +65,9 @@ export const registerQueues = async () => {
   // await createProductJob("cs-connector-store.myshopify.com", "", []);
   // await createLocationJob("cs-connector-store.myshopify.com");
   // await createProductTriggerJob("cs-connector-store.myshopify.com");
+  await createProductGroupJob(
+    "cs-connector-store.myshopify.com",
+    "c09c07e9-9f0c-4cab-a270-e9cdc847c962",
+    [],
+  );
 };

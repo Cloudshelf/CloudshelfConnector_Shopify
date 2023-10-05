@@ -89,3 +89,47 @@ export async function* readJsonlChunked(
     yield chunkedObjects;
   }
 }
+
+export async function* readJsonl(filepath: string): any {
+  const childObjects: { [key: string]: any } = {};
+
+  const rl = await readFileBackwards(filepath);
+
+  for await (const line of rl) {
+    // eslint-disable-next-line no-continue
+    if (!line) continue;
+
+    const object = JSON.parse(line);
+    const t = /gid:\/\/shopify\/(.*)\/\d/.exec(object.id);
+    if (!t) {
+      throw new Error("Bad line");
+    }
+    const [, objectType] = t;
+
+    if (childObjects[object.id]) {
+      Object.assign(object, {
+        ...childObjects[object.id],
+      });
+
+      delete childObjects[object.id];
+    }
+
+    if (object.__parentId) {
+      if (!childObjects[object.__parentId]) {
+        childObjects[object.__parentId] = {};
+      }
+
+      if (!childObjects[object.__parentId][objectType]) {
+        childObjects[object.__parentId][objectType] = [];
+      }
+
+      childObjects[object.__parentId][objectType].push(object);
+    }
+
+    if (!object.__parentId) {
+      yield object;
+    } else {
+      delete object.__parentId;
+    }
+  }
+}

@@ -24,15 +24,22 @@ import {
 import { Container } from "../../container";
 import {
   LocationInput,
+  ProductGroupInput,
   ProductInput,
   ProductsTestDocument,
   ProductsTestQuery,
   ProductsTestQueryVariables,
   ProductVariantInput,
   ThemeInput,
+  UpdateProductsInProductGroupDocument,
+  UpdateProductsInProductGroupMutation,
+  UpdateProductsInProductGroupMutationVariables,
   UpsertLocationsDocument,
   UpsertLocationsMutation,
   UpsertLocationsMutationVariables,
+  UpsertProductGroupsDocument,
+  UpsertProductGroupsMutation,
+  UpsertProductGroupsMutationVariables,
   UpsertProductsDocument,
   UpsertProductsMutation,
   UpsertProductsMutationVariables,
@@ -306,6 +313,43 @@ export class ShopifyStoreService {
       variables: {
         inputs,
         productId,
+      },
+    });
+
+    //TODO: Handle errors
+  }
+
+  async updateProductGroups(domain: string, input: ProductGroupInput[]) {
+    const client = CloudshelfClientFactory.getClient(domain);
+
+    const mutationTuple = await client.mutate<
+      UpsertProductGroupsMutation,
+      UpsertProductGroupsMutationVariables
+    >({
+      mutation: UpsertProductGroupsDocument,
+      variables: {
+        input,
+      },
+    });
+
+    //TODO: Handle errors
+  }
+
+  async updateProductsInProductGroup(
+    domain: string,
+    productGroupId: string,
+    productIds: string[],
+  ) {
+    const client = CloudshelfClientFactory.getClient(domain);
+
+    const mutationTuple = await client.mutate<
+      UpdateProductsInProductGroupMutation,
+      UpdateProductsInProductGroupMutationVariables
+    >({
+      mutation: UpdateProductsInProductGroupDocument,
+      variables: {
+        productGroupId,
+        productIds,
       },
     });
 

@@ -56,12 +56,13 @@ export const createProductGroupJob = async (
   domain: string,
   bulkOperationId: string,
   groupIds: string[],
+  isFirstSync = false,
 ): Promise<void> => {
   //Need to handle how we store this data, we used to do this in a table called bulk ops...
   const jobPayload: ProductGroupJobData = {
     domain,
     lockId: domain,
-    isFirstSync: false,
+    isFirstSync: isFirstSync,
     remoteBulkOperationId: bulkOperationId,
     groupIds: groupIds,
   };

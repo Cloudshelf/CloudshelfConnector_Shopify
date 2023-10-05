@@ -20,6 +20,9 @@ import {
   ExchangeTokenQuery,
   ExchangeTokenQueryVariables,
 } from "./graphql/cloudshelf/generated/cloudshelf";
+import { createThemeJob } from "./modules/queue/queues/theme/theme.job.functions";
+import { createLocationJob } from "./modules/queue/queues/location/location.job.functions";
+import { createProductTriggerJob } from "./modules/queue/queues/product/product.job.functions";
 
 dotenv.config();
 
@@ -28,6 +31,14 @@ const customTokens: { [domain: string]: string } = {};
 (async () => {
   Error.stackTraceLimit = 100;
   const app = express();
+
+  app.get("/FORCE", async (req, res, next) => {
+    await createThemeJob("cs-connector-store.myshopify.com");
+    // await createLocationJob("cs-connector-store.myshopify.com");
+    // await createProductTriggerJob("cs-connector-store.myshopify.com", true, []);
+    res.send("force test");
+  });
+
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -58,6 +69,87 @@ const customTokens: { [domain: string]: string } = {};
     ],
   });
 
+  console.log("Auth path:", shopifyApp.config.auth.path);
+  app.get(shopifyApp.config.auth.path, shopifyApp.auth.begin());
+  app.get(
+    shopifyApp.config.auth.callbackPath,
+    (req: Request, res: Response, next: NextFunction) => {
+      console.log("Before callback");
+      next();
+    },
+    shopifyApp.auth.callback(),
+    (req: Request, res: Response, next: NextFunction) => {
+      console.log("After callback");
+
+      //after callback, direct to a page that does an authenticated fetch.
+      res.redirect(
+        `https://admin.shopify.com/store/${getShopIdFromRequest(req)}/apps/${
+          process.env.APP_SLUG
+        }/app/auth/fetch`,
+      );
+    },
+    //requestBilling
+    shopifyApp.redirectToShopifyOrAppRoot(),
+  );
+
+  app.get("/shopify/cb", async (req, res, next) => {
+    const sessionId = await shopifyApp.api.session.getCurrentId({
+      isOnline: false,
+      rawRequest: req,
+      rawResponse: res,
+    });
+
+    if (sessionId) {
+      const session = await Container.shopifyService.getSession(sessionId);
+      if (!session || !session.shop || !session.accessToken) {
+        return;
+      }
+      // Store access token!
+      // const store = await Container.shopifyStoreService.findStoreByDomain(
+      //   session?.shop ?? "",
+      // );
+
+      await Container.shopifyStoreService.upsertStore(
+        session.shop,
+        session.accessToken,
+        session.scope?.split(",") ?? [],
+      );
+    }
+
+    res.end(`cb`);
+  });
+
+  app.get("/app/auth/fetch", async (req, res) => {
+    res.end(
+      generateHtmlPayload({
+        loadingText: "Authenticating your store",
+        script: `
+          fetch('https://${process.env.HOSTNAME}/shopify/cb').then(() => {
+            open('https://admin.shopify.com/store/${getShopIdFromRequest(
+              req,
+            )}/apps/${process.env.APP_SLUG}/', '_top');
+          });
+        `,
+      }),
+    );
+  });
+
+  app.get("/app/exitiframe", (req, res) => {
+    const params = req.query;
+    const redirectUri = (params["redirectUri"] ?? "") as string;
+    const fullUrl = `${redirectUri}`;
+
+    res.end(
+      generateHtmlPayload({
+        loadingText: "Redirecting you to shopify installation",
+        script: `
+         open('${fullUrl}', '_top');
+        `,
+      }),
+    );
+  });
+
+  ///////
   // We proxy all requests except those prefixed with /app to the Cloudshelf Manager, so that the app can be embedded in
   // Shopify's Admin panel transparently. Most eCommerce connectors will not need to do this as apps will be hosted
   // separately from the eCommerce platform.
@@ -99,7 +191,6 @@ const customTokens: { [domain: string]: string } = {};
   });
 
   app.use(
-    //shopifyApp.validateAuthenticatedSession(), //this is needed for non-embedded
     async (req, res, next) => {
       const shop = req.query["shop"] as string;
 
@@ -182,105 +273,10 @@ const customTokens: { [domain: string]: string } = {};
 
       next();
     },
-    async (req, res, next) => {
-      const shop = req.query["shop"] as string;
-
-      if (
-        !req.path.startsWith("/_next") &&
-        !req.path.startsWith("/app/webhooks") &&
-        shop
-      ) {
-        //because of the routing-controllers, closing the request...
-        // this next line would cause errors if we let it run in webhooks :upside
-        // so we wrap it in this request handler statement
-        shopifyApp.ensureInstalledOnShop()(req, res, next);
-        next();
-      } else {
-        next();
-      }
-    },
+    shopifyApp.ensureInstalledOnShop(),
     apiProxy,
   );
-
-  console.log("Auth path:", shopifyApp.config.auth.path);
-  app.get(shopifyApp.config.auth.path, shopifyApp.auth.begin());
-  app.get(
-    shopifyApp.config.auth.callbackPath,
-    (req: Request, res: Response, next: NextFunction) => {
-      console.log("Before callback");
-      next();
-    },
-    shopifyApp.auth.callback(),
-    (req: Request, res: Response, next: NextFunction) => {
-      console.log("After callback");
-
-      //after callback, direct to a page that does an authenticated fetch.
-      res.redirect(
-        `https://admin.shopify.com/store/${getShopIdFromRequest(req)}/apps/${
-          process.env.APP_SLUG
-        }/app/auth/fetch`,
-      );
-    },
-    //requestBilling
-    shopifyApp.redirectToShopifyOrAppRoot(),
-  );
-
-  app.get("/shopify/cb", async (req, res, next) => {
-    const sessionId = await shopifyApp.api.session.getCurrentId({
-      isOnline: false,
-      rawRequest: req,
-      rawResponse: res,
-    });
-
-    if (sessionId) {
-      const session = await Container.shopifyService.getSession(sessionId);
-      if (!session || !session.shop || !session.accessToken) {
-        return;
-      }
-      // Store access token!
-      // const store = await Container.shopifyStoreService.findStoreByDomain(
-      //   session?.shop ?? "",
-      // );
-
-      await Container.shopifyStoreService.upsertStore(
-        session.shop,
-        session.accessToken,
-        session.scope?.split(",") ?? [],
-      );
-    }
-
-    res.end(`cb`);
-  });
-
-  app.get("/app/auth/fetch", async (req, res) => {
-    res.end(
-      generateHtmlPayload({
-        loadingText: "Authenticating your store",
-        script: `
-          fetch('https://${process.env.HOSTNAME}/shopify/cb').then(() => {
-            open('https://admin.shopify.com/store/${getShopIdFromRequest(
-              req,
-            )}/apps/${process.env.APP_SLUG}/', '_top');
-          });
-        `,
-      }),
-    );
-  });
-
-  app.get("/app/exitiframe", (req, res) => {
-    const params = req.query;
-    const redirectUri = (params["redirectUri"] ?? "") as string;
-    const fullUrl = `${redirectUri}`;
-
-    res.end(
-      generateHtmlPayload({
-        loadingText: "Redirecting you to shopify installation",
-        script: `
-         open('${fullUrl}', '_top');
-        `,
-      }),
-    );
-  });
+  ///////
 
   app.get("/app/delsess", async (req, res, next) => {
     /* DEBUG */

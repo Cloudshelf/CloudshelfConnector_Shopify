@@ -58,6 +58,7 @@ import { CloudshelfClientFactory } from "../cloudshelfClient/CloudshelfClient";
 import { createThemeJob } from "../queue/queues/theme/theme.job.functions";
 import { createLocationJob } from "../queue/queues/location/location.job.functions";
 import { ApolloQueryResult } from "@apollo/client";
+import { createProductTriggerJob } from "../queue/queues/product/product.job.functions";
 
 export class ShopifyStoreService {
   async upsertStore(domain: string, accessToken: string, scopes: string[]) {
@@ -113,6 +114,7 @@ export class ShopifyStoreService {
     if (newStore) {
       await createThemeJob(domain);
       await createLocationJob(domain);
+      await createProductTriggerJob(domain, true, []);
     }
   }
 

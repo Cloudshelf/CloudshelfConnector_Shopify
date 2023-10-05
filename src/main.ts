@@ -10,8 +10,16 @@ import { generateHtmlPayload } from "./generateHtmlPayload";
 import { getShopIdFromRequest } from "./utils/request-params";
 import { Container } from "./container";
 import { createHmac } from "crypto";
+import { CloudshelfClientFactory } from "./modules/cloudshelfClient/CloudshelfClient";
+import {
+  ExchangeTokenDocument,
+  ExchangeTokenQuery,
+  ExchangeTokenQueryVariables,
+} from "./graphql/cloudshelf/generated/cloudshelf";
 
 dotenv.config();
+
+const customTokens: { [domain: string]: string } = {};
 
 (async () => {
   const app: Express = createExpressServer({
@@ -129,6 +137,32 @@ dotenv.config();
     changeOrigin: true,
     pathFilter: ["**", "!/app/**", "!/exitiframe**"],
     logger: console,
+    cookieDomainRewrite: process.env.HOSTNAME!,
+    on: {
+      proxyReq: (proxyReq, req, res) => {
+        const queryParams = new URLSearchParams(req.url?.split("?")[1]);
+        if (queryParams.has("id_token")) {
+          const idToken = queryParams.get("id_token")!;
+          proxyReq.setHeader("Authorization", `${idToken}`);
+        }
+        proxyReq.end();
+      },
+    },
+    pathRewrite: (path, req) => {
+      // Parse path query
+      const query = path.split("?")[1];
+      const params = new URLSearchParams(query);
+      if (params.has("shop")) {
+        // Add custom token
+        const shop = params.get("shop")!;
+        const token = customTokens[shop];
+        if (token) {
+          params.set("id_token", token);
+          path = path.split("?")[0] + "?" + params.toString();
+        }
+      }
+      return path;
+    },
   });
 
   app.use(
@@ -143,9 +177,6 @@ dotenv.config();
         apiProxy(req, res, next);
         return;
       }
-
-      console.log("SHOP", shop);
-      console.log("next");
 
       // Verify hmac
       const hmac = req.query["hmac"] as string;
@@ -171,9 +202,8 @@ dotenv.config();
       );
 
       if (session) {
-        const store = await Container.shopifyStoreService.findStoreByDomain(
-          shop,
-        );
+        const store =
+          await Container.shopifyStoreService.findStoreByDomain(shop);
         if (!store && session.accessToken) {
           console.log("Creating store (again?)");
           await Container.shopifyStoreService.upsertStore(
@@ -181,6 +211,22 @@ dotenv.config();
             session.accessToken,
             session.scope?.split(",") ?? [],
           );
+        }
+
+        const authedClient = CloudshelfClientFactory.getClient(shop);
+        const customTokenQuery = await authedClient.query<
+          ExchangeTokenQuery,
+          ExchangeTokenQueryVariables
+        >({
+          query: ExchangeTokenDocument,
+          variables: {
+            domain: shop,
+          },
+        });
+        if (customTokenQuery.data?.customToken) {
+          // Add the custom token to the map. This ensures that proxy requests always access the most recent custom
+          // token.
+          customTokens[shop] = customTokenQuery.data.customToken;
         }
       }
 

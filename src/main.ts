@@ -145,6 +145,10 @@ const customTokens: { [domain: string]: string } = {};
           const idToken = queryParams.get("id_token")!;
           proxyReq.setHeader("Authorization", `${idToken}`);
         }
+        if (queryParams.has("host")) {
+          const host = queryParams.get("host")!;
+          proxyReq.setHeader("x-shopify-host", `${host}`);
+        }
         proxyReq.end();
       },
     },

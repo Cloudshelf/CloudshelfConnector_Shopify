@@ -16,7 +16,14 @@ export class CloudshelfClientFactory {
 
     const authLink = new ApolloLink((operation, forward) => {
       const timestamp = new Date().getTime().toString();
-      const hmac = domain ? createHmac(domain, timestamp) : "";
+      const vs = Object.keys(operation.variables ?? {})
+        .sort()
+        .reduce((obj, key) => {
+          obj[key] = operation.variables[key];
+          return obj;
+        }, {} as any);
+      const variables = JSON.stringify(vs);
+      const hmac = domain ? createHmac(domain + variables, timestamp) : "";
 
       operation.setContext(({ headers = {} }) => ({
         headers: {

@@ -2299,8 +2299,8 @@ export type Query = {
   cloudshelfEnginePayload: CloudshelfEnginePayload;
   /** Returns a paginated array of Cloudshelves */
   cloudshelves: CloudshelfPaginatedPayload;
-  /** An internal function for swapping a Shopify Session Token for a Cloudshelf Authentication Token. */
-  customTokenFromShopifySessionToken: Scalars['String']['output'];
+  /** An internal function for getting a Cloudshelf Authentication Token. */
+  customToken?: Maybe<Scalars['String']['output']>;
   /** Returns a Device entity */
   device?: Maybe<Device>;
   /** Returns a paginated array of Devices. */
@@ -2386,8 +2386,8 @@ export type QueryCloudshelvesArgs = {
 };
 
 
-export type QueryCustomTokenFromShopifySessionTokenArgs = {
-  sessionToken: Scalars['String']['input'];
+export type QueryCustomTokenArgs = {
+  domain: Scalars['String']['input'];
 };
 
 
@@ -3029,8 +3029,8 @@ export const UpsertLocationsDocument = gql`
 }
     `;
 export const ExchangeTokenDocument = gql`
-    query ExchangeToken($token: String!) {
-  customTokenFromShopifySessionToken(sessionToken: $token)
+    query ExchangeToken($domain: String!) {
+  customToken(domain: $domain)
 }
     `;
 export const UpsertStoreDocument = gql`
@@ -3107,8 +3107,8 @@ export const UpsertThemeDocument = gql`
 }
     `;
 export const ProductsTestDocument = gql`
-    query ProductsTest {
-  products(first: 3) {
+    query ProductsTest($first: Int!) {
+  products(first: $first) {
     edges {
       node {
         id
@@ -3131,11 +3131,11 @@ export type UpsertLocationsMutationVariables = Exact<{
 export type UpsertLocationsMutation = { __typename?: 'Mutation', upsertLocations: { __typename?: 'LocationUpsertPayload', locations: Array<{ __typename?: 'Location', id: any }>, userErrors: Array<{ __typename?: 'UserError', code: UserErrorCode, message: string }> } };
 
 export type ExchangeTokenQueryVariables = Exact<{
-  token: Scalars['String']['input'];
+  domain: Scalars['String']['input'];
 }>;
 
 
-export type ExchangeTokenQuery = { __typename?: 'Query', customTokenFromShopifySessionToken: string };
+export type ExchangeTokenQuery = { __typename?: 'Query', customToken?: string | null };
 
 export type UpsertStoreMutationVariables = Exact<{
   input: ShopifyStoreInput;
@@ -3183,7 +3183,9 @@ export type UpsertThemeMutationVariables = Exact<{
 
 export type UpsertThemeMutation = { __typename?: 'Mutation', upsertTheme: { __typename?: 'ThemeUpsertPayload', userErrors: Array<{ __typename?: 'UserError', code: UserErrorCode, message: string }>, theme?: { __typename?: 'Theme', id: any } | null } };
 
-export type ProductsTestQueryVariables = Exact<{ [key: string]: never; }>;
+export type ProductsTestQueryVariables = Exact<{
+  first: Scalars['Int']['input'];
+}>;
 
 
 export type ProductsTestQuery = { __typename?: 'Query', products: { __typename?: 'ProductPaginatedPayload', edges?: Array<{ __typename?: 'ProductEdge', node?: { __typename?: 'Product', id: any } | null }> | null, pageInfo?: { __typename?: 'ProductPageInfo', hasNextPage: boolean, hasPreviousPage: boolean, endCursor?: string | null, startCursor?: string | null } | null } };

@@ -330,6 +330,8 @@ export type CloudshelfInput = {
   nonInteractiveProductImageDurationInSeconds?: InputMaybe<Scalars['Int']['input']>;
   onOrderLabel?: InputMaybe<Scalars['String']['input']>;
   pdpBlocks?: InputMaybe<Array<PdpBlockInput>>;
+  /** Whether or not to use randomly selected content or not. Only takes affect for newly created Cloudshelves */
+  randomContent?: InputMaybe<Scalars['GlobalId']['input']>;
   soldOutLabel?: InputMaybe<Scalars['String']['input']>;
   /** The GlobalID of the theme to apply to this Cloudshelf */
   themeId?: InputMaybe<Scalars['GlobalId']['input']>;
@@ -2326,6 +2328,8 @@ export type Query = {
   orders: OrderPaginatedPayload;
   /** Returns an Organisation entity */
   organisation?: Maybe<Organisation>;
+  /** Returns if the install has been completed for an organisation */
+  organisationInstallComplete?: Maybe<Scalars['Boolean']['output']>;
   /** Returns a paginated array of organisations */
   organisations: OrganisationPaginatedPayload;
   pausedNobleQueues: Array<NobleTaskType>;
@@ -2465,6 +2469,11 @@ export type QueryOrdersArgs = {
 
 export type QueryOrganisationArgs = {
   id: Scalars['GlobalId']['input'];
+};
+
+
+export type QueryOrganisationInstallCompleteArgs = {
+  domain: Scalars['String']['input'];
 };
 
 
@@ -3046,6 +3055,24 @@ export const UpsertStoreDocument = gql`
   }
 }
     `;
+export const IsInstallCompletedDocument = gql`
+    query isInstallCompleted($domain: String!) {
+  organisationInstallComplete(domain: $domain)
+}
+    `;
+export const UpsertCloudshelfDocument = gql`
+    mutation upsertCloudshelf($input: [CloudshelfInput!]!) {
+  upsertCloudshelves(input: $input) {
+    cloudshelves {
+      id
+    }
+    userErrors {
+      code
+      message
+    }
+  }
+}
+    `;
 export const UpsertProductGroupsDocument = gql`
     mutation upsertProductGroups($input: [ProductGroupInput!]!) {
   upsertProductGroups(input: $input) {
@@ -3145,6 +3172,20 @@ export type UpsertStoreMutationVariables = Exact<{
 
 
 export type UpsertStoreMutation = { __typename?: 'Mutation', upsertShopifyOrganisation: { __typename?: 'OrganisationUpsertPayload', organisation?: { __typename?: 'Organisation', id: any } | null, userErrors: Array<{ __typename?: 'UserError', message: string, code: UserErrorCode }> } };
+
+export type IsInstallCompletedQueryVariables = Exact<{
+  domain: Scalars['String']['input'];
+}>;
+
+
+export type IsInstallCompletedQuery = { __typename?: 'Query', organisationInstallComplete?: boolean | null };
+
+export type UpsertCloudshelfMutationVariables = Exact<{
+  input: Array<CloudshelfInput> | CloudshelfInput;
+}>;
+
+
+export type UpsertCloudshelfMutation = { __typename?: 'Mutation', upsertCloudshelves: { __typename?: 'CloudshelfUpsertPayload', cloudshelves: Array<{ __typename?: 'Cloudshelf', id: any }>, userErrors: Array<{ __typename?: 'UserError', code: UserErrorCode, message: string }> } };
 
 export type UpsertProductGroupsMutationVariables = Exact<{
   input: Array<ProductGroupInput> | ProductGroupInput;

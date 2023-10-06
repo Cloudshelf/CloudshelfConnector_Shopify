@@ -23,6 +23,10 @@ import {
 } from "../../graphql/shopifyStorefront/generated/shopifyStorefront";
 import { Container } from "../../container";
 import {
+  CloudshelfInput,
+  IsInstallCompletedDocument,
+  IsInstallCompletedQuery,
+  IsInstallCompletedQueryVariables,
   LocationInput,
   ProductGroupInput,
   ProductInput,
@@ -34,6 +38,9 @@ import {
   UpdateProductsInProductGroupDocument,
   UpdateProductsInProductGroupMutation,
   UpdateProductsInProductGroupMutationVariables,
+  UpsertCloudshelfDocument,
+  UpsertCloudshelfMutation,
+  UpsertCloudshelfMutationVariables,
   UpsertLocationsDocument,
   UpsertLocationsMutation,
   UpsertLocationsMutationVariables,
@@ -352,6 +359,38 @@ export class ShopifyStoreService {
       variables: {
         productGroupId,
         productIds,
+      },
+    });
+
+    //TODO: Handle errors
+  }
+
+  async isStoreFullyInstalled(domain: string) {
+    const client = CloudshelfClientFactory.getClient(domain);
+
+    const queryTuple = await client.query<
+      IsInstallCompletedQuery,
+      IsInstallCompletedQueryVariables
+    >({
+      query: IsInstallCompletedDocument,
+      variables: {
+        domain,
+      },
+    });
+
+    return queryTuple.data.organisationInstallComplete ?? false;
+  }
+
+  async upsertCloudshelf(domain: string, input: CloudshelfInput) {
+    const client = CloudshelfClientFactory.getClient(domain);
+
+    const mutationTuple = await client.mutate<
+      UpsertCloudshelfMutation,
+      UpsertCloudshelfMutationVariables
+    >({
+      mutation: UpsertCloudshelfDocument,
+      variables: {
+        input: [input],
       },
     });
 

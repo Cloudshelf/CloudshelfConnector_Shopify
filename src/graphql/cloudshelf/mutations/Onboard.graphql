@@ -13,3 +13,21 @@ mutation UpsertStore($input: ShopifyStoreInput!, $hmac: String!, $nonce: String!
        }
    }
 }
+
+
+query isInstallCompleted($domain: String!) {
+    organisationInstallComplete(domain: $domain)
+}
+
+
+mutation upsertCloudshelf($input: [CloudshelfInput!]!) {
+    upsertCloudshelves(input: $input) {
+        cloudshelves {
+            id
+        }
+        userErrors {
+            code
+            message
+        }
+    }
+}

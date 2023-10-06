@@ -149,6 +149,31 @@ const customTokens: { [domain: string]: string } = {};
     );
   });
 
+  app.get("/app/delsess", async (req, res, next) => {
+    /* DEBUG */
+    await Container.shopifyService.deleteAllSessions(
+      "cs-connector-store.myshopify.com",
+    );
+    res.send("done");
+  });
+
+  app.get("/app/getsess", async (req, res, next) => {
+    /* DEBUG */
+    await Container.shopifyService.printAllSessions(
+      "cs-connector-store.myshopify.com",
+    );
+    res.send("done");
+  });
+
+  app.get("/app/test", async (req, res, next) => {
+    /* DEBUG */
+    const orm = Container.orm;
+    console.log(orm);
+    //A quick test area to test out code
+
+    res.send("done test");
+  });
+
   ///////
   // We proxy all requests except those prefixed with /app to the Cloudshelf Manager, so that the app can be embedded in
   // Shopify's Admin panel transparently. Most eCommerce connectors will not need to do this as apps will be hosted
@@ -285,31 +310,6 @@ const customTokens: { [domain: string]: string } = {};
     apiProxy,
   );
   ///////
-
-  app.get("/app/delsess", async (req, res, next) => {
-    /* DEBUG */
-    await Container.shopifyService.deleteAllSessions(
-      "cs-connector-store.myshopify.com",
-    );
-    res.send("done");
-  });
-
-  app.get("/app/getsess", async (req, res, next) => {
-    /* DEBUG */
-    await Container.shopifyService.printAllSessions(
-      "cs-connector-store.myshopify.com",
-    );
-    res.send("done");
-  });
-
-  app.get("/app/test", async (req, res, next) => {
-    /* DEBUG */
-    const orm = Container.orm;
-    console.log(orm);
-    //A quick test area to test out code
-
-    res.send("done test");
-  });
 
   app.listen(port, () => {
     console.log(`🚀 Server running on port ${port}`);

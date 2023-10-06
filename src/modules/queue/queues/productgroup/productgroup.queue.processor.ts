@@ -22,6 +22,7 @@ import { promisify } from "util";
 import { readJsonl } from "../../../../utils/readJsonlChunked";
 import { gidConverter } from "../../../../utils/gidConverter";
 import {
+  CloudshelfInput,
   ProductGroupInput,
   ProductVariantInput,
 } from "../../../../graphql/cloudshelf/generated/cloudshelf";
@@ -181,6 +182,22 @@ export const productGroupQueueProcessor = async (
       job.data.domain,
       productGroupId,
       productIds,
+    );
+  }
+
+  //Now, we need to handle creating the first cloudshelf if needed
+  const installAlreadyCompleted =
+    await Container.shopifyStoreService.isStoreFullyInstalled(job.data.domain);
+  if (!installAlreadyCompleted) {
+    const firstCloudshelf: CloudshelfInput = {
+      id: `gid://external/ConnectorGeneratedCloudshelf/${job.data.domain}`,
+      randomContent: true,
+      displayName: "First Cloudshelf",
+      homeFrameCallToAction: "Touch to discover and buy",
+    };
+    await Container.shopifyStoreService.upsertCloudshelf(
+      job.data.domain,
+      firstCloudshelf,
     );
   }
 

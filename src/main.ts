@@ -108,7 +108,6 @@ const customTokens: { [domain: string]: string } = {};
       // const store = await Container.shopifyStoreService.findStoreByDomain(
       //   session?.shop ?? "",
       // );
-
       await Container.shopifyStoreService.upsertStore(
         session.shop,
         session.accessToken,

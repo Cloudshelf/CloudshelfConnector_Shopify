@@ -2,10 +2,14 @@ import { Container } from "../../../../container";
 import { ThemeJobData } from "./theme.job.data.type";
 import { QueueNames } from "../../queue.names.const";
 
-export const createThemeJob = async (domain: string): Promise<void> => {
+export const createThemeJob = async (
+  domain: string,
+  installStyleSync = false,
+): Promise<void> => {
   const jobPayload: ThemeJobData = {
     domain,
     lockId: domain,
+    installStyleSync,
   };
 
   await Container.queueService.addJob(QueueNames.THEME, jobPayload, {

@@ -44,6 +44,7 @@ export const productGroupTriggerQueueProcessor = async (
     job.data.domain,
     BulkOperationType.ProductGroupSync,
     bulkOperationString,
+    job.data.installStyleSync ?? false,
     job.data.groupIds,
   );
 

@@ -38,6 +38,7 @@ export const productTriggerQueueProcessor = async (
     job.data.domain,
     BulkOperationType.ProductSync,
     bulkOperationString,
+    job.data.installStyleSync ?? false,
     job.data.productIds,
   );
 
@@ -53,7 +54,11 @@ export const productQueueProcessor = async (
 ): Promise<void> => {
   const handleComplete = async () => {
     //We always need to queue a product group trigger job after we successfully complete a product job
-    await createProductGroupTriggerJob(job.data.domain);
+    await createProductGroupTriggerJob(
+      job.data.domain,
+      [],
+      job.data.installStyleSync,
+    );
 
     await jobLog(job, "productQueueProcessor Completed");
     console.log("productQueueProcessor Completed");

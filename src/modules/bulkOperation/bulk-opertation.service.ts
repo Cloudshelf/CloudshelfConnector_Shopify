@@ -32,6 +32,7 @@ export class BulkOperationService {
     domain: string,
     type: BulkOperationType,
     bulkOperationString: string,
+    installStyleSync = false,
     explicitIds?: string[],
   ): Promise<BulkOperation> {
     const dataFromShopify = await this.createBulkOperationOnShopify(
@@ -48,6 +49,7 @@ export class BulkOperationService {
       dataFromShopify.id,
       type,
       dataFromShopify?.status,
+      installStyleSync,
       explicitIds,
     );
 
@@ -59,6 +61,7 @@ export class BulkOperationService {
     shopifyId: string,
     type: BulkOperationType,
     status: string,
+    installStyleSync = false,
     explicitIds?: string[],
   ): Promise<BulkOperation> {
     const em = Container.entityManager.fork();
@@ -69,6 +72,7 @@ export class BulkOperationService {
     bulkOperation.status = status;
     bulkOperation.type = type;
     bulkOperation.explicitIds = explicitIds ?? [];
+    bulkOperation.installStyleSync = installStyleSync;
 
     await em.upsert(BulkOperation, bulkOperation);
     return bulkOperation;

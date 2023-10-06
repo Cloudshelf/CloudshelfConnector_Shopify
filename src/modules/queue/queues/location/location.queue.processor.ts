@@ -3,6 +3,8 @@ import { Container } from "../../../../container";
 import { LocationInput } from "../../../../graphql/cloudshelf/generated/cloudshelf";
 import { convertCountryCode } from "../../../../utils/countryCodeConverter";
 import { gidConverter } from "../../../../utils/gidConverter";
+import { createLocationJob } from "./location.job.functions";
+import { createProductTriggerJob } from "../product/product.job.functions";
 
 export const locationQueueProcessor = async (job: Job): Promise<void> => {
   const shopifyLocationData = await Container.shopifyStoreService.getLocations(
@@ -38,4 +40,15 @@ export const locationQueueProcessor = async (job: Job): Promise<void> => {
     job.data.domain,
     locationInputs,
   );
+
+  await job.log("Locations created in Cloudshelf");
+
+  if (job.data.installStyleSync) {
+    //If this job came from an install, we need to queue the next one which is product trigger
+    await createProductTriggerJob(
+      job.data.domain,
+      [],
+      job.data.installStyleSync,
+    );
+  }
 };

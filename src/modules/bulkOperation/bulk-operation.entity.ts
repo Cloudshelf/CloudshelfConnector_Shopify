@@ -45,4 +45,7 @@ export class BulkOperation {
 
   @Property({ type: types.array, default: [] })
   explicitIds!: string[];
+
+  @Property({ type: types.boolean, default: false })
+  installStyleSync!: boolean;
 }

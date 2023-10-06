@@ -4,14 +4,14 @@ import { ProductJobData, ProductTriggerJobData } from "./product.job.data.type";
 
 export const createProductTriggerJob = async (
   domain: string,
-  firstSync = false,
   productIds: string[] = [],
+  installStyleSync = false,
 ): Promise<void> => {
   const jobPayload: ProductTriggerJobData = {
     domain,
     lockId: domain,
-    isFirstSync: firstSync,
     productIds,
+    installStyleSync,
   };
 
   const existingJob =
@@ -20,7 +20,7 @@ export const createProductTriggerJob = async (
       domain,
     );
 
-  if (firstSync || productIds.length === 0) {
+  if (productIds.length === 0) {
     //We want to do a full sync here, remove any existing jobs
     if (existingJob) {
       await existingJob.remove();
@@ -54,15 +54,15 @@ export const createProductJob = async (
   domain: string,
   bulkOperationId: string,
   productIds: string[],
-  isfirstSync = false,
+  installStyleSync = false,
 ): Promise<void> => {
   //Need to handle how we store this data, we used to do this in a table called bulk ops...
   const jobPayload: ProductJobData = {
     domain,
     lockId: domain,
-    isFirstSync: isfirstSync,
     remoteBulkOperationId: bulkOperationId,
     productIds: productIds,
+    installStyleSync,
   };
 
   await Container.queueService.addJob(

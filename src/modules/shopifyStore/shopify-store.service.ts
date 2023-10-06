@@ -119,9 +119,8 @@ export class ShopifyStoreService {
     }
 
     if (newStore) {
-      await createThemeJob(domain);
-      await createLocationJob(domain);
-      await createProductTriggerJob(domain, true, []);
+      //we only have to queue the theme job if this is a new store, and it will handle the test
+      await createThemeJob(domain, true);
     }
   }
 

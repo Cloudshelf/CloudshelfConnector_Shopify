@@ -3,14 +3,13 @@ import { Container } from "../../../../container";
 import { ThemeJobData } from "./theme.job.data.type";
 import { ThemeInput } from "../../../../graphql/cloudshelf/generated/cloudshelf";
 import { gidConverter } from "../../../../utils/gidConverter";
+import { createLocationJob } from "../location/location.job.functions";
 
 export const themeQueueProcessor = async (
   job: Job<ThemeJobData>,
 ): Promise<void> => {
-  console.log("themeQueueProcessor -> 1");
   const shopifyThemeData =
     await Container.shopifyStoreService.getThemeFromShopify(job.data.domain);
-  console.log("themeQueueProcessor -> 2");
   const themeInput: ThemeInput = {
     displayName: "Default Theme",
   };
@@ -20,7 +19,7 @@ export const themeQueueProcessor = async (
       "Shopify did not return any theme data, as Cloudshelf requires a theme to be present, we will create a default theme.",
     );
   }
-  console.log("themeQueueProcessor -> 3");
+
   if (shopifyThemeData?.id) {
     themeInput.id = gidConverter(shopifyThemeData.id, "ShopifyShopBrand");
   }
@@ -36,14 +35,20 @@ export const themeQueueProcessor = async (
     themeInput.primaryColor =
       shopifyThemeData?.brand.colors.primary[0].foreground;
   }
-  console.log("themeQueueProcessor -> 4");
+
   await job.log(
     "Creating theme in Cloudshelf with data: " + JSON.stringify(themeInput),
   );
-  console.log("themeQueueProcessor -> 5, " + job.data.domain);
+
   await Container.shopifyStoreService.upsertThemeToCloudshelf(
     job.data.domain,
     themeInput,
   );
-  console.log("themeQueueProcessor -> 6");
+
+  await job.log("Theme created in Cloudshelf");
+
+  if (job.data.installStyleSync) {
+    //If this job came from an install, we need to queue the next one which is locations
+    await createLocationJob(job.data.domain, job.data.installStyleSync);
+  }
 };

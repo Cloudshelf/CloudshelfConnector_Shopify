@@ -21,7 +21,10 @@ export class BulkOperationController {
 
   @Post("/complete")
   @HttpCode(200)
-  async test(@Req() req: Request, @Body() body: BulkOperationWebhookPayload) {
+  async complete(
+    @Req() req: Request,
+    @Body() body: BulkOperationWebhookPayload,
+  ) {
     console.log("Received bulkOpComplete webhook");
 
     const shopDomain = req.get("x-shopify-shop-domain"); //req.headers["x-shopify-shop-domain"] ?? undefined;
@@ -86,7 +89,12 @@ export class BulkOperationController {
       console.log(
         "Creating product sync background task from bulkOpComplete webhook",
       );
-      await createProductJob(shopDomain, bulkOp.id, bulkOp.explicitIds ?? []);
+      await createProductJob(
+        shopDomain,
+        bulkOp.id,
+        bulkOp.explicitIds ?? [],
+        bulkOp.installStyleSync,
+      );
     } else if (bulkOp.type === BulkOperationType.ProductGroupSync) {
       console.log(
         "Creating product group sync background task from bulkOpComplete webhook",
@@ -95,6 +103,7 @@ export class BulkOperationController {
         shopDomain,
         bulkOp.id,
         bulkOp.explicitIds ?? [],
+        bulkOp.installStyleSync,
       );
     } else {
       console.log("bulkOpComplete webhook referenced unknown bulkOp type");

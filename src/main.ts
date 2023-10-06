@@ -33,10 +33,8 @@ const customTokens: { [domain: string]: string } = {};
   const app = express();
 
   app.get("/FORCE", async (req, res, next) => {
-    await createThemeJob("cs-connector-store.myshopify.com");
-    await createLocationJob("cs-connector-store.myshopify.com");
-    await createProductTriggerJob("cs-connector-store.myshopify.com", true, []);
-    res.send("force test");
+    await createThemeJob("cs-connector-store.myshopify.com", true);
+    res.send("force done");
   });
 
   app.use(bodyParser.json());
@@ -67,6 +65,13 @@ const customTokens: { [domain: string]: string } = {};
         callbackUrl: "/app/webhooks/bulkoperation/complete",
       },
     ],
+    APP_UNINSTALLED: [
+      {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/app/webhooks/shopify-store/uninstalled",
+      },
+    ],
+    //todo - add more webhooks here
   });
 
   console.log("Auth path:", shopifyApp.config.auth.path);

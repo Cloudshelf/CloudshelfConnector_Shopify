@@ -1,0 +1,33 @@
+query ExchangeToken($domain: String!) {
+   customToken(domain: $domain)
+}
+
+mutation UpsertStore($input: ShopifyStoreInput!, $hmac: String!, $nonce: String!) {
+   upsertShopifyOrganisation(input: $input, hmac: $hmac, nonce: $nonce) {
+       organisation {
+           id
+       }
+       userErrors {
+           message
+           code
+       }
+   }
+}
+
+
+query isInstallCompleted($domain: String!) {
+    organisationInstallComplete(domain: $domain)
+}
+
+
+mutation upsertCloudshelf($input: [CloudshelfInput!]!) {
+    upsertCloudshelves(input: $input) {
+        cloudshelves {
+            id
+        }
+        userErrors {
+            code
+            message
+        }
+    }
+}

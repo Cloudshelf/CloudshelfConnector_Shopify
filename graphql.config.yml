@@ -1,0 +1,8 @@
+projects:
+  cloudshelf:
+    schema: src/graphql/cloudshelf/generated/cloudshelf.schema.json
+    documents: src/graphql/cloudshelf/**/*.graphql
+  shopify:
+    schema: src/graphql/shopify/generated/shopify.schema.json
+    documents: src/graphql/shopify/**/*.graphql
+

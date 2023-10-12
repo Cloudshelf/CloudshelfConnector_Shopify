@@ -1,0 +1,49 @@
+query BulkOperationByShopifyId($nodeId: ID!) {
+    node(id: $nodeId) {
+        ... on BulkOperation {
+            id
+            status
+            errorCode
+            createdAt
+            completedAt
+            objectCount
+            fileSize
+            url
+            partialDataUrl
+        }
+    }
+}
+
+query CurrentBulkOperation {
+    currentBulkOperation {
+        id
+        status
+    }
+}
+
+mutation CancelBulkOp($id: ID!) {
+    bulkOperationCancel(id: $id) {
+        bulkOperation {
+            status
+        }
+        userErrors {
+            field
+            message
+        }
+    }
+}
+
+mutation CreateShopifyBulkOperation($queryString: String!) {
+    bulkOperationRunQuery(
+        query: $queryString
+    ) {
+        bulkOperation {
+            id
+            status
+        }
+        userErrors {
+            field
+            message
+        }
+    }
+}

@@ -68,6 +68,7 @@ import {
   UpsertThemeDocument,
   UpsertThemeMutation,
   UpsertThemeMutationVariables,
+  UpsertVariantsInput,
 } from "../../graphql/cloudshelf/generated/cloudshelf";
 import { createHmac } from "../../utils/hmac";
 import { CloudshelfClientFactory } from "../cloudshelfClient/CloudshelfClient";
@@ -322,8 +323,7 @@ export class ShopifyStoreService {
 
   async upsertProductVariantsToCloudshelf(
     domain: string,
-    inputs: ProductVariantInput[],
-    productId: string,
+    inputs: UpsertVariantsInput[],
   ) {
     const client = CloudshelfClientFactory.getClient(domain);
 
@@ -334,7 +334,6 @@ export class ShopifyStoreService {
       mutation: UpsertProductVariantsDocument,
       variables: {
         inputs,
-        productId,
       },
     });
 

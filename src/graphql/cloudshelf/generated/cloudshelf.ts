@@ -151,6 +151,7 @@ export type Cloudshelf = {
   displayOnOrderLabel: Scalars['Boolean']['output'];
   displaySoldOutLabel: Scalars['Boolean']['output'];
   displayStockCount: Scalars['Boolean']['output'];
+  engagements: Array<Session>;
   filters: Array<Filter>;
   homeFrameCallToAction: Scalars['String']['output'];
   homeFrameCallToActionAlignment: Alignment;
@@ -194,6 +195,12 @@ export type Cloudshelf = {
   theme: Theme;
   /** The date and time this entity was last updated. */
   updatedAt: Scalars['DateTime']['output'];
+};
+
+
+export type CloudshelfEngagementsArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
 };
 
 export type CloudshelfContent = {
@@ -925,11 +932,13 @@ export type Device = {
   engineVersionLastSeen?: Maybe<Scalars['String']['output']>;
   /** A unique internal GlobalId for this entity. */
   id: Scalars['GlobalId']['output'];
+  lastSeen?: Maybe<Scalars['DateTime']['output']>;
   location?: Maybe<Location>;
   owningOrganisation?: Maybe<Organisation>;
   registered: Scalars['Boolean']['output'];
   registrationCode: Scalars['String']['output'];
   screenSizeInches: Scalars['Float']['output'];
+  status: EngineStatus;
   /** The date and time this entity was last updated. */
   updatedAt: Scalars['DateTime']['output'];
   visibilityType?: Maybe<VisibilityType>;
@@ -1006,6 +1015,7 @@ export enum ECommercePlatform {
 
 export type EngineImageWithVariantInfo = {
   __typename?: 'EngineImageWithVariantInfo';
+  preferred: Scalars['Boolean']['output'];
   url: Scalars['String']['output'];
   variantId?: Maybe<Scalars['GlobalId']['output']>;
 };
@@ -1022,11 +1032,11 @@ export type EngineProductWithAdditionalInfo = {
   categoryHandles: Array<Scalars['String']['output']>;
   categoryIds: Array<Scalars['String']['output']>;
   descriptionHtml: Scalars['String']['output'];
+  eCommercePlatformProvidedId?: Maybe<Scalars['GlobalId']['output']>;
   handle: Scalars['String']['output'];
   id: Scalars['GlobalId']['output'];
   images: Array<EngineImageWithVariantInfo>;
   metadata: Array<Metadata>;
-  platformProvidedId?: Maybe<Scalars['GlobalId']['output']>;
   remoteUpdatedAt: Scalars['DateTime']['output'];
   tags: Array<Scalars['String']['output']>;
   title: Scalars['String']['output'];
@@ -1063,6 +1073,13 @@ export type EngineProductWithAdditionalInfoPayload = {
   totalCount: Scalars['Int']['output'];
 };
 
+export enum EngineStatus {
+  Live = 'LIVE',
+  NoCloudshelf = 'NO_CLOUDSHELF',
+  Offline = 'OFFLINE',
+  Updating = 'UPDATING'
+}
+
 export enum EngineType {
   DisplayOnly = 'DISPLAY_ONLY',
   Hybrid = 'HYBRID',
@@ -1074,11 +1091,11 @@ export type EngineVariant = {
   availableForSale: Scalars['Boolean']['output'];
   currentlyNotInStock: Scalars['Boolean']['output'];
   displayName: Scalars['String']['output'];
+  eCommercePlatformProvidedId?: Maybe<Scalars['GlobalId']['output']>;
   hasSalePrice?: Maybe<Scalars['Boolean']['output']>;
   id?: Maybe<Scalars['GlobalId']['output']>;
   options: Array<KeyValuePair>;
   originalPrice: Scalars['Float']['output'];
-  platformProvidedId?: Maybe<Scalars['GlobalId']['output']>;
   price: Scalars['Float']['output'];
   sellableOnlineQuantity: Scalars['Float']['output'];
   sku: Scalars['String']['output'];
@@ -1395,10 +1412,13 @@ export type Metaimage = {
   id: Scalars['GlobalId']['output'];
   /** The orientation of the image */
   orientation?: Maybe<ImageOrientation>;
+  /** The URL of the image */
+  originalUrl: Scalars['String']['output'];
   /** The organisation which owns this entity. */
   owningOrganisation: Organisation;
   /** A boolean value that represents if the image is a preferred image for the entity it is linked too. The Cloudshelf Engine will always try to use a preferred image over a non-preferred image. */
   preferredImage: Scalars['Boolean']['output'];
+  productGroup?: Maybe<ProductGroup>;
   /** The product variant which this metaimage is linked too. */
   productVariant?: Maybe<ProductVariant>;
   /** The quality of the image */
@@ -1552,7 +1572,7 @@ export type MutationNewSessionArgs = {
   deviceId: Scalars['GlobalId']['input'];
   latitude?: InputMaybe<Scalars['Latitude']['input']>;
   longitude?: InputMaybe<Scalars['Longitude']['input']>;
-  salesAssistantId: Scalars['GlobalId']['input'];
+  salesAssistantId?: InputMaybe<Scalars['GlobalId']['input']>;
 };
 
 
@@ -1670,8 +1690,7 @@ export type MutationUpsertProductGroupsArgs = {
 
 
 export type MutationUpsertProductVariantsArgs = {
-  inputs: Array<ProductVariantInput>;
-  productId: Scalars['ID']['input'];
+  inputs: Array<UpsertVariantsInput>;
 };
 
 
@@ -2109,7 +2128,7 @@ export type ProductGroup = {
   createdAt: Scalars['DateTime']['output'];
   /** The name of the product group. */
   displayName: Scalars['String']['output'];
-  featuredImage?: Maybe<Scalars['String']['output']>;
+  featuredImage?: Maybe<Metaimage>;
   /** The handle of the product, which is the original display name in all lower case, and with all non-alphanumeric characters removed and spaces replaced with hyphens. */
   handle: Scalars['String']['output'];
   /** A unique internal GlobalId for this entity. */
@@ -2586,6 +2605,7 @@ export type Session = {
   createdAt: Scalars['DateTime']['output'];
   deviceId: Scalars['String']['output'];
   deviceName: Scalars['String']['output'];
+  duration: Scalars['Float']['output'];
   /** The date and time that this session ended at. */
   endedAt?: Maybe<Scalars['DateTime']['output']>;
   /** A unique internal GlobalId for this entity. */
@@ -2896,6 +2916,12 @@ export enum TouchIndicator {
   None = 'NONE'
 }
 
+export type UpsertVariantsInput = {
+  /** Use this field to provide either a Cloudshelf gid, or your own external gid. If the external gid already exists, the existing record will be updated. If the external gid does not exist, a new record will be created. */
+  productId: Scalars['GlobalId']['input'];
+  variants: Array<ProductVariantInput>;
+};
+
 export type User = {
   __typename?: 'User';
   actingAs?: Maybe<UserOrganisationAccess>;
@@ -3138,8 +3164,8 @@ export const UpsertProductsDocument = gql`
 }
     `;
 export const UpsertProductVariantsDocument = gql`
-    mutation upsertProductVariants($inputs: [ProductVariantInput!]!, $productId: ID!) {
-  upsertProductVariants(inputs: $inputs, productId: $productId) {
+    mutation upsertProductVariants($inputs: [UpsertVariantsInput!]!) {
+  upsertProductVariants(inputs: $inputs) {
     productVariants {
       id
     }
@@ -3265,8 +3291,7 @@ export type UpsertProductsMutationVariables = Exact<{
 export type UpsertProductsMutation = { __typename?: 'Mutation', upsertProducts: { __typename?: 'ProductUpsertPayload', products: Array<{ __typename?: 'Product', id: any }>, userErrors: Array<{ __typename?: 'UserError', code: UserErrorCode, message: string }> } };
 
 export type UpsertProductVariantsMutationVariables = Exact<{
-  inputs: Array<ProductVariantInput> | ProductVariantInput;
-  productId: Scalars['ID']['input'];
+  inputs: Array<UpsertVariantsInput> | UpsertVariantsInput;
 }>;
 
 

@@ -30,7 +30,8 @@ dotenv.config();
   const app = express();
 
   app.get("/FORCE", async (req, res, next) => {
-    await createThemeJob("cs-connector-store.myshopify.com", true);
+    // await createThemeJob("cs-connector-store.myshopify.com", true);
+    await createThemeJob("csl-fashion-2021.myshopify.com", true);
     res.send("force done");
   });
 

@@ -10,8 +10,8 @@ mutation upsertProducts($input: [ProductInput!]!) {
     }
 }
 
-mutation upsertProductVariants($inputs: [ProductVariantInput!]!, $productId: ID!) {
-    upsertProductVariants(inputs: $inputs, productId: $productId) {
+mutation upsertProductVariants($inputs: [UpsertVariantsInput!]!) {
+    upsertProductVariants(inputs: $inputs) {
         productVariants {
             id
         }

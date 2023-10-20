@@ -147,24 +147,42 @@ export const productGroupQueueProcessor = async (
         continue;
       }
 
-      const productGroupInput: ProductGroupInput = {
-        id: collectionId,
-        displayName: collectionObj.title,
-        // this should be metaimages?
-        featuredImage: undefined,
-        //We dont yet support metadata on collections
-        metadata: [],
-      };
-      productGroupInputs.push(productGroupInput);
+      let image: string | undefined = undefined;
+
+      if (collectionObj.image?.url) {
+        image = collectionObj.image.url;
+      }
 
       (collectionObj.Product ?? []).map((p: any) => {
         const productId = gidConverter(p.id, "ShopifyProduct")!;
+
+        if (p.featuredImage?.url) {
+          if (image === undefined || image === "") {
+            image = p.featuredImage.url;
+          }
+        }
+
         if (productsInGroups[collectionId] === undefined) {
           productsInGroups[collectionId] = [productId];
         } else {
           productsInGroups[collectionId].push(productId);
         }
       });
+
+      const productGroupInput: ProductGroupInput = {
+        id: collectionId,
+        displayName: collectionObj.title,
+        // this should be metaimages?
+        featuredImage: image
+          ? {
+              url: image,
+              preferredImage: false,
+            }
+          : null,
+        //We dont yet support metadata on collections
+        metadata: [],
+      };
+      productGroupInputs.push(productGroupInput);
     }
   }
 

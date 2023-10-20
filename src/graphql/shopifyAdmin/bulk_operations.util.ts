@@ -1,15 +1,22 @@
-export function buildCategoryQueryString(categoryId: string, withPublicationStatus: boolean) {
-    return `
+export function buildCategoryQueryString(
+  categoryId: string,
+  withPublicationStatus: boolean,
+) {
+  return `
     {
       collection(id: "${categoryId}") {
         id
-        ${withPublicationStatus ? 'publishedOnCurrentPublication' : ''}
+        ${withPublicationStatus ? "publishedOnCurrentPublication" : ""}
         products {
             edges {
                 node {
                     id
                     status
-                    ${withPublicationStatus ? 'publishedOnCurrentPublication' : ''}
+                    ${
+                      withPublicationStatus
+                        ? "publishedOnCurrentPublication"
+                        : ""
+                    }
                     storefrontId
                     title
                     descriptionHtml
@@ -74,13 +81,13 @@ export function buildCategoryQueryString(categoryId: string, withPublicationStat
 }
 
 export function buildCategoriesQueryString(withPublicationStatus: boolean) {
-    return `
+  return `
         {
       collections {
         edges {
           node {
             id
-            ${withPublicationStatus ? 'publishedOnCurrentPublication' : ''}
+            ${withPublicationStatus ? "publishedOnCurrentPublication" : ""}
             title
             handle
             image {
@@ -104,7 +111,9 @@ export function buildCategoriesQueryString(withPublicationStatus: boolean) {
                     }
                   }
                   status
-                  ${withPublicationStatus ? 'publishedOnCurrentPublication' : ''}
+                  ${
+                    withPublicationStatus ? "publishedOnCurrentPublication" : ""
+                  }
                   storefrontId
                   title
                   descriptionHtml
@@ -158,27 +167,30 @@ export function buildCategoriesQueryString(withPublicationStatus: boolean) {
     `;
 }
 
-export function buildProductsQueryString(productIds: string[], withPublicationStatus: boolean) {
-    let queryString = ``;
+export function buildProductsQueryString(
+  productIds: string[],
+  withPublicationStatus: boolean,
+) {
+  let queryString = ``;
 
-    if (productIds.length === 0) {
-        //We want to return all products in the store
-    } else {
-        //We want to get specific products, so we need to build the query string
-        queryString = productIds
-            .map((productId) => {
-                let id = productId;
-                if (id.includes('gid://shopify/Product/')) {
-                    id = id.replace('gid://shopify/Product/', '');
-                }
-                return `(id:${id})`;
-            })
-            .join(` OR `);
+  if (productIds.length === 0) {
+    //We want to return all products in the store
+  } else {
+    //We want to get specific products, so we need to build the query string
+    queryString = productIds
+      .map((productId) => {
+        let id = productId;
+        if (id.includes("gid://shopify/Product/")) {
+          id = id.replace("gid://shopify/Product/", "");
+        }
+        return `(id:${id})`;
+      })
+      .join(` OR `);
 
-        queryString = `(first: ${productIds.length}, query: \"${queryString}\")`;
-    }
+    queryString = `(first: ${productIds.length}, query: \"${queryString}\")`;
+  }
 
-    return `
+  return `
     {
   products${queryString} {
     edges {
@@ -197,7 +209,7 @@ export function buildProductsQueryString(productIds: string[], withPublicationSt
           }
         }
         status
-        ${withPublicationStatus ? 'publishedOnCurrentPublication' : ''}
+        ${withPublicationStatus ? "publishedOnCurrentPublication" : ""}
         storefrontId
         title
         descriptionHtml
@@ -248,34 +260,37 @@ export function buildProductsQueryString(productIds: string[], withPublicationSt
 `;
 }
 
-export function buildCollectionQueryString(collectionIds: string[], withPublicationStatus: boolean) {
-    let queryString = ``;
+export function buildCollectionQueryString(
+  collectionIds: string[],
+  withPublicationStatus: boolean,
+) {
+  let queryString = ``;
 
-    if (collectionIds.length === 0) {
-        //We want to return all collections in the store
-    }
-    //We want to get specific collection, so we need to build the query string
-    else {
-        queryString = collectionIds
-            .map((collectionId) => {
-                let id = collectionId;
-                if (id.includes('gid://shopify/Collection/')) {
-                    id = id.replace('gid://shopify/Collection/', '');
-                }
-                return `(id:${id})`;
-            })
-            .join(` OR `);
+  if (collectionIds.length === 0) {
+    //We want to return all collections in the store
+  }
+  //We want to get specific collection, so we need to build the query string
+  else {
+    queryString = collectionIds
+      .map((collectionId) => {
+        let id = collectionId;
+        if (id.includes("gid://shopify/Collection/")) {
+          id = id.replace("gid://shopify/Collection/", "");
+        }
+        return `(id:${id})`;
+      })
+      .join(` OR `);
 
-        queryString = `(first: ${collectionIds.length}, query: \"${queryString}\")`;
-    }
+    queryString = `(first: ${collectionIds.length}, query: \"${queryString}\")`;
+  }
 
-    return `
+  return `
        {
   collections${queryString}  {
     edges {
       node {
         id
-        ${withPublicationStatus ? 'publishedOnCurrentPublication' : ''}
+        ${withPublicationStatus ? "publishedOnCurrentPublication" : ""}
         title
         handle
         image {
@@ -286,6 +301,10 @@ export function buildCollectionQueryString(collectionIds: string[], withPublicat
           edges {
             node {
               id
+              featuredImage {
+                    url
+                    id
+              }
             }
           }
         }

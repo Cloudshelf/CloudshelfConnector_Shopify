@@ -2168,7 +2168,7 @@ export type ProductGroupInput = {
   /** The display name of the product group */
   displayName?: InputMaybe<Scalars['String']['input']>;
   /** The featured image of the product group */
-  featuredImage?: InputMaybe<Scalars['String']['input']>;
+  featuredImage?: InputMaybe<MetaimageInput>;
   /** Use this field to provide either a Cloudshelf gid, or your own external gid. If the external gid already exists, the existing record will be updated. If the external gid does not exist, a new record will be created. */
   id?: InputMaybe<Scalars['GlobalId']['input']>;
   /** An array of metadata to attach to the product group */

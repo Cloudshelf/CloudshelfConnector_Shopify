@@ -345,7 +345,26 @@ dotenv.config();
   );
   ///////
 
+  // In the event of an unexpected error, return a 500
+  app.use(function (
+    err: Error,
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    res.status(500);
+    res.send("Internal server error");
+  });
+
   app.listen(port, () => {
     console.log(`🚀 Server running on port ${port}`);
   });
 })();
+
+// Handle unhandled promise rejections and uncaught exceptions to prevent crashes
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled promise rejection: ", err);
+});
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception: ", err);
+});

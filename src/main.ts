@@ -21,6 +21,7 @@ import {
 } from "./graphql/cloudshelf/generated/cloudshelf";
 import { createThemeJob } from "./modules/queue/queues/theme/theme.job.functions";
 import { QueueController } from "./modules/queue/queue.controller";
+import { MetricsController } from "./modules/metrics/metrics.controller";
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ dotenv.config();
       DebugController,
       BulkOperationController,
       QueueController,
+      MetricsController,
     ],
     routePrefix: "/app",
   });
@@ -301,9 +303,8 @@ dotenv.config();
       }
 
       if (session) {
-        const store = await Container.shopifyStoreService.findStoreByDomain(
-          shop,
-        );
+        const store =
+          await Container.shopifyStoreService.findStoreByDomain(shop);
         if (!store && session.accessToken) {
           console.log("Creating store (again?)");
           await Container.shopifyStoreService.upsertStore(

@@ -115,5 +115,75 @@ Store data will shortly be removed from Cloudshelf.`,
       });
     }
   }
-  //
+
+  async sendQueueHealthStatus(
+    queueName: string,
+    messages: string[],
+    severity: "warn" | "critical",
+  ) {
+    await this.slackClient.chat.postMessage({
+      channel: process.env.SLACK_CHANNEL ?? "",
+      text: " ",
+      username: "Shopify Connector - Cloudshelf Notifier",
+      attachments: [
+        {
+          color: severity === "warn" ? "#FFB700" : "#FF0000",
+          blocks: [
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: `${queueName} Queue - ${
+                  severity === "warn" ? "Warning :warning:" : "Critical :fire:"
+                }`,
+              },
+            },
+            // a block for each message
+            ...messages.map((text) => ({
+              type: "section",
+              text: {
+                type: "mrkdwn",
+                text: `- ${text}`,
+              },
+            })),
+          ],
+        },
+      ],
+    });
+  }
+
+  async sendSyncHealthStatus(
+    messages: string[],
+    severity: "warn" | "critical",
+  ) {
+    await this.slackClient.chat.postMessage({
+      channel: process.env.SLACK_CHANNEL ?? "",
+      text: " ",
+      username: "Shopify Connector - Cloudshelf Notifier",
+      attachments: [
+        {
+          color: severity === "warn" ? "#FFB700" : "#FF0000",
+          blocks: [
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: `Sync Status - ${
+                  severity === "warn" ? "Warning :warning:" : "Critical :fire:"
+                }`,
+              },
+            },
+            // a block for each message
+            ...messages.map((text) => ({
+              type: "section",
+              text: {
+                type: "mrkdwn",
+                text: `- ${text}`,
+              },
+            })),
+          ],
+        },
+      ],
+    });
+  }
 }

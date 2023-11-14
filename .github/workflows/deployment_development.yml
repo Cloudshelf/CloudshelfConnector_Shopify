@@ -281,7 +281,7 @@ jobs:
           docker buildx build --platform linux/amd64 -t $REGISTRY/$REPOSITORY:$IMAGE_TAG . --push
 
       # Ask azure to deploy the image to the connector web app
-       - name: 'Deploy to Shopify Connector Web Apps'
+      - name: 'Deploy to Shopify Connector Web Apps'
         id: deploy-to-webapp-connector
         uses: azure/webapps-deploy@v3
         with:

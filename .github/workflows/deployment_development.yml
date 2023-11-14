@@ -3,7 +3,7 @@ name: Build and Deploy Cloudshelf Shopify Connector to Azure
 on:
   push:
     branches:
-      - CS-1836
+      - CS-1386
 
 
 jobs:

@@ -3,13 +3,13 @@ name: Build and Deploy Cloudshelf Shopify Connector to Azure
 on:
   push:
     branches:
-      - CS-1386
+      - development
 
 
 
 jobs:
   version:
-    environment: "development"
+    environment: ${{ github.head_ref || github.ref_name }}
     runs-on: ubuntu-latest
 
     steps:
@@ -22,7 +22,7 @@ jobs:
         uses: cloudshelf/versioning-action@v1.6.0
         id: versioning
         with:
-          release_type: "development"
+          release_type: ${{ github.head_ref || github.ref_name }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           slack_channel: "${{ vars.SLACK_NOTIFY_CHANNEL_ID }}"
           slack_token: ${{ secrets.SLACK_TOKEN }}
@@ -33,7 +33,7 @@ jobs:
 
   build-and-deploy:
     needs: version
-    environment: "development"
+    environment: ${{ github.head_ref || github.ref_name }}
     runs-on: ubuntu-latest
     permissions:
       id-token: write

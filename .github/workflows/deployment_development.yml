@@ -281,13 +281,13 @@ jobs:
           docker buildx build --platform linux/amd64 -t $REGISTRY/$REPOSITORY:$IMAGE_TAG . --push
 
       # Ask azure to deploy the image to the connector web app
-      # - name: 'Deploy to Shopify Connector Web Apps'
-      #  id: deploy-to-webapp-connector
-      #  uses: azure/webapps-deploy@v3
-      #  with:
-      #    app-name: 'cloudshelf-development-ingest'
-      #    publish-profile: ${{ vars.AZURE_PUBLISH_PROFILE_INGEST }}
-      #    images: cloudshelf.azurecr.io/${{ vars.AZURE_CONTAINER_REPO }}:${{ needs.version.outputs.normalisedVersion }}
+       - name: 'Deploy to Shopify Connector Web Apps'
+        id: deploy-to-webapp-connector
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'cloudshelf-development-shopify-connector'
+          publish-profile: ${{ vars.AZURE_PUBLISH_PROFILE }}
+          images: cloudshelf.azurecr.io/${{ vars.AZURE_CONTAINER_REPO }}:${{ needs.version.outputs.normalisedVersion }}
 
       - uses: slackapi/slack-github-action@v1.24.0
         if: success()

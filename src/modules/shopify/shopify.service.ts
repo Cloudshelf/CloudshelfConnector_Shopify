@@ -2,6 +2,7 @@ import { ShopifyApp, shopifyApp } from "@shopify/shopify-app-express";
 import { RedisSessionStorage } from "@shopify/shopify-app-session-storage-redis";
 import "@shopify/shopify-api/adapters/node";
 import { SessionStorage } from "@shopify/shopify-app-session-storage";
+import { AppConfigParams } from "@shopify/shopify-app-express/build/ts/config-types";
 
 export class ShopifyService {
   public readonly shopifyApp: ShopifyApp;
@@ -15,7 +16,7 @@ export class ShopifyService {
       {},
     );
 
-    this.shopifyApp = shopifyApp({
+    const config: AppConfigParams<any, SessionStorage> = {
       api: {
         isEmbeddedApp: true,
         apiKey: process.env.SHOPIFY_API_KEY!,
@@ -58,7 +59,11 @@ export class ShopifyService {
       // @ts-ignore - Shopify's library types do not match...
       sessionStorage: this.sessionStorage,
       useOnlineTokens: false,
-    });
+    };
+
+    console.log("Using Config: ", JSON.stringify(config, null, 2));
+
+    this.shopifyApp = shopifyApp(config);
   }
 
   async getSession(id: string) {

@@ -34,6 +34,9 @@ import {
   IsInstallCompletedQuery,
   IsInstallCompletedQueryVariables,
   LocationInput,
+  MarkUninstalledDocument,
+  MarkUninstalledMutation,
+  MarkUninstalledMutationVariables,
   ProductGroupInput,
   ProductInput,
   ProductsTestDocument,
@@ -81,6 +84,28 @@ export class ShopifyStoreService {
   async getAllStores() {
     const em = Container.entityManager.fork();
     return em.find(ShopifyStore, {});
+  }
+
+  async markUninstalled(domain: string) {
+    //report uninstall to cloudshelf
+    const timestamp = new Date().getTime().toString();
+    const mutationTuple = await CloudshelfClientFactory.getClient().mutate<
+      MarkUninstalledMutation,
+      MarkUninstalledMutationVariables
+    >({
+      mutation: MarkUninstalledDocument,
+      variables: {
+        input: {
+          domain,
+        },
+        hmac: createHmac(domain, timestamp),
+        nonce: timestamp,
+      },
+    });
+
+    if (mutationTuple.errors || !mutationTuple.data) {
+      console.log("Failed to mark store as uninstalled on cloudshelf");
+    }
   }
 
   async upsertStore(domain: string, accessToken: string, scopes: string[]) {

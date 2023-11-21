@@ -21,8 +21,17 @@ import {
 } from "./graphql/cloudshelf/generated/cloudshelf";
 import { createThemeJob } from "./modules/queue/queues/theme/theme.job.functions";
 import { QueueController } from "./modules/queue/queue.controller";
+import * as Sentry from "@sentry/node";
 
 dotenv.config();
+
+Sentry.init({
+  dsn: process.env.SENTRY_DNS,
+  tracesSampleRate: 1.0,
+  environment: process.env.RELEASE_TYPE ?? "local",
+  release: process.env.PACKAGE_VERSION ?? "development_local",
+  ignoreErrors: [],
+});
 
 (async () => {
   console.log("Starting up....");

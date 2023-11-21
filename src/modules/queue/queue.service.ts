@@ -71,7 +71,7 @@ export class QueueService {
             JSON.stringify(ex, Object.getOwnPropertyNames(ex), 2),
           );
           const failCount = job.data.failCount || 0;
-          await job.updateData({ ...job.updateData, failCount: failCount + 1 });
+          await job.updateData({ ...job.data, failCount: failCount + 1 });
           await job.retry();
           if (job.data.lockId) {
             console.log(
@@ -144,7 +144,7 @@ export class QueueService {
 
     if (pendingJobs.length > 1) {
       console.error(
-        `More that one existing job for queue '${queueName}' job found for domain '${domain}'. This should not happen, cancelling all but one job.`,
+        `More than one existing job for queue '${queueName}' job found for domain '${domain}'. This should not happen, cancelling all but one job.`,
       );
       await Promise.all(
         pendingJobs.map(async (job, index) => {

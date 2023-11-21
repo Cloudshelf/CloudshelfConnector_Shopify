@@ -116,6 +116,7 @@ jobs:
         run: |
           echo "" >> .env
           echo "VERSION=${{ needs.version.outputs.version }}" >> .env
+          echo "PACKAGE_VERSION=${{ needs.version.outputs.version }}" >> .env
 
       # Add the sentry creds to .env
       - name: Add sentry creds to .env

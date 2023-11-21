@@ -35,6 +35,12 @@ Sentry.init({
 
 (async () => {
   console.log("Starting up....");
+
+  Sentry.startTransaction({
+    op: "Startup",
+    name: "Application Startup",
+  }).finish();
+
   Error.stackTraceLimit = 100;
   const app = express();
 

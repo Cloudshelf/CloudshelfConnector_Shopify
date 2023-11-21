@@ -15,6 +15,10 @@ mutation UpsertStore($input: ShopifyStoreInput!, $hmac: String!, $nonce: String!
 }
 
 
+mutation MarkUninstalled($input: ShopifyStoreUninstallInput!, $hmac: String!, $nonce: String!) {
+    markShopifyOrganisationUninstallStarted(input: $input, hmac: $hmac, nonce: $nonce)
+}
+
 query isInstallCompleted($domain: String!) {
     organisationInstallComplete(domain: $domain)
 }

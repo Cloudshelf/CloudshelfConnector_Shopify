@@ -130,6 +130,16 @@ export enum CapitalisationStyle {
   Uppercase = 'UPPERCASE'
 }
 
+/** Selects what checkout flow the customers will see. */
+export enum CheckoutFlow {
+  /** Users will be taken through the Shopify checkout flow. */
+  Shopify = 'SHOPIFY',
+  /** Users will have the basket transferred to a third party service. */
+  TransferBasket = 'TRANSFER_BASKET',
+  /** A internal value for when the checkout flow is unknown */
+  Unknown = 'UNKNOWN'
+}
+
 export enum ClearSalesAssistantRule {
   Daily = 'DAILY',
   Never = 'NEVER',
@@ -139,6 +149,7 @@ export enum ClearSalesAssistantRule {
 export type Cloudshelf = {
   __typename?: 'Cloudshelf';
   banners: Array<Banner>;
+  checkoutFlow: CheckoutFlow;
   content: Array<CloudshelfContent>;
   /** The date and time this entity was created. */
   createdAt: Scalars['DateTime']['output'];
@@ -152,6 +163,7 @@ export type Cloudshelf = {
   displaySoldOutLabel: Scalars['Boolean']['output'];
   displayStockCount: Scalars['Boolean']['output'];
   engagements: Array<Session>;
+  filterExtractionPending: Scalars['Boolean']['output'];
   filters: Array<Filter>;
   homeFrameCallToAction: Scalars['String']['output'];
   homeFrameCallToActionAlignment: Alignment;
@@ -293,6 +305,7 @@ export type CloudshelfIncludableFilterInput = {
 
 export type CloudshelfInput = {
   banners?: InputMaybe<Array<BannerInput>>;
+  checkoutFlow?: InputMaybe<CheckoutFlow>;
   content?: InputMaybe<Array<CloudshelfContentInput>>;
   displayDiscountCodeEntry?: InputMaybe<Scalars['Boolean']['input']>;
   displayHomeFrame?: InputMaybe<Scalars['Boolean']['input']>;
@@ -1005,12 +1018,25 @@ export type DeviceUpsertPayload = {
   userErrors: Array<UserError>;
 };
 
+export type DraftOrderInput = {
+  /** The GlobalID of the device this order was created at */
+  deviceId?: InputMaybe<Scalars['GlobalId']['input']>;
+  /** Use this field to provide either a Cloudshelf gid, or your own external gid. If the external gid already exists, the existing record will be updated. If the external gid does not exist, a new record will be created. */
+  id?: InputMaybe<Scalars['GlobalId']['input']>;
+  /** An array of lines that make up this order */
+  lines?: InputMaybe<Array<OrderLineInput>>;
+  /** The GlobalID of the location this order was created at */
+  locationId?: InputMaybe<Scalars['GlobalId']['input']>;
+};
+
 /** The eCommerce platform the organisation has connected to Cloudshelf */
 export enum ECommercePlatform {
   /** The organisation is connected to Cloudshelf via a custom integration */
   Custom = 'CUSTOM',
   /** The organisation is connected to Cloudshelf via the Cloudshelf Shopify app */
-  Shopify = 'SHOPIFY'
+  Shopify = 'SHOPIFY',
+  /** A internal value for when the eCommerce platform is unknown */
+  Unknown = 'UNKNOWN'
 }
 
 export type EngineImageWithVariantInfo = {
@@ -1117,6 +1143,7 @@ export type Filter = {
   mergedInFilters: Array<MergedInFilter>;
   metafieldKey?: Maybe<Scalars['String']['output']>;
   options?: Maybe<FilterOptions>;
+  /** A unique internal GlobalId for this entity. */
   parentId?: Maybe<Scalars['GlobalId']['output']>;
   priority: Scalars['Int']['output'];
   type: FilterType;
@@ -1441,6 +1468,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   /** Adds the given list of products to the product group, if they are not already part of the product group */
   addProductsToProductGroup: Scalars['Boolean']['output'];
+  createTrackedURL: TrackedUrlPayload;
   createUserAndOrganisationForCustomIntegration: CustomIntegrationFullSignupResultPayload;
   /** Allows deletion of Cloudshelves */
   deleteCloudshelves: CloudshelfDeletePayload;
@@ -1459,6 +1487,7 @@ export type Mutation = {
   /** Allows the current user leave an Organisation. */
   leaveOrganisation: Scalars['Boolean']['output'];
   markInstallComplete: Scalars['Boolean']['output'];
+  markShopifyOrganisationUninstallStarted: Scalars['Boolean']['output'];
   newSession: Session;
   /** Register a webhook for a given subject. The supplied URL will be called with a POST request when the subject is triggered. */
   registerWebhook: WebhookRegisterPayload;
@@ -1466,13 +1495,17 @@ export type Mutation = {
   removeProductsFromProductGroup: Scalars['Boolean']['output'];
   reportDeviceOnline: Scalars['Boolean']['output'];
   requestShopifySubscriptionCheck: Scalars['Boolean']['output'];
+  revokeAccessRight: Scalars['Boolean']['output'];
   /** This is an internal function. This allows Cloudshelf staff to run internal tools */
   runInternalTool: Scalars['String']['output'];
   saveSurveyAnswers: Scalars['Boolean']['output'];
   /** Sets the users currently active organisation (actingAs), which is used to decide which organisations data is accessed in other queries. */
   selectCurrentOrganisationAccess: Scalars['Boolean']['output'];
+  setActingAs: Scalars['Boolean']['output'];
   setActiveVersion: Scalars['Boolean']['output'];
   setPausedNobleQueuesByType: Scalars['Boolean']['output'];
+  /** Allows settings of an variables */
+  setVariables: Scalars['Boolean']['output'];
   subscribe: Scalars['String']['output'];
   toggleInMaintenanceMode: Scalars['Boolean']['output'];
   toggleNoblePaused: Scalars['Boolean']['output'];
@@ -1481,7 +1514,6 @@ export type Mutation = {
   unsubscribe: Scalars['Boolean']['output'];
   /** Allows updating basic user information */
   updateMyUser: User;
-  updateProductVariant: ProductVariant;
   /** Sets the products in the product group to the given list of products */
   updateProductsInProductGroup: Scalars['Boolean']['output'];
   updateSession: Session;
@@ -1489,6 +1521,8 @@ export type Mutation = {
   upsertCloudshelves: CloudshelfUpsertPayload;
   /** Allows upserting of Devices */
   upsertDevices: DeviceUpsertPayload;
+  /** Allows upserting of Draft Order entities */
+  upsertDraftOrders: OrderUpsertPayload;
   /** Allows upserting of locations */
   upsertLocations: LocationUpsertPayload;
   /** Allows upserting of Order entities */
@@ -1503,12 +1537,21 @@ export type Mutation = {
   upsertShopifyOrganisation: OrganisationUpsertPayload;
   /** Allows upserting of Themes */
   upsertTheme: ThemeUpsertPayload;
+  /** Allows upserting of user access to the current organisation */
+  upsertUser: UserUpsertPayload;
 };
 
 
 export type MutationAddProductsToProductGroupArgs = {
   productGroupId: Scalars['GlobalId']['input'];
   productIds: Array<Scalars['GlobalId']['input']>;
+};
+
+
+export type MutationCreateTrackedUrlArgs = {
+  cloudshelfId: Scalars['GlobalId']['input'];
+  sessionId?: InputMaybe<Scalars['GlobalId']['input']>;
+  urlToTrack: Scalars['String']['input'];
 };
 
 
@@ -1568,6 +1611,13 @@ export type MutationLeaveOrganisationArgs = {
 };
 
 
+export type MutationMarkShopifyOrganisationUninstallStartedArgs = {
+  hmac: Scalars['String']['input'];
+  input: ShopifyStoreUninstallInput;
+  nonce: Scalars['String']['input'];
+};
+
+
 export type MutationNewSessionArgs = {
   deviceId: Scalars['GlobalId']['input'];
   latitude?: InputMaybe<Scalars['Latitude']['input']>;
@@ -1601,6 +1651,11 @@ export type MutationRequestShopifySubscriptionCheckArgs = {
 };
 
 
+export type MutationRevokeAccessRightArgs = {
+  accessRightId: Scalars['GlobalId']['input'];
+};
+
+
 export type MutationRunInternalToolArgs = {
   toolType: Scalars['String']['input'];
 };
@@ -1616,6 +1671,11 @@ export type MutationSelectCurrentOrganisationAccessArgs = {
 };
 
 
+export type MutationSetActingAsArgs = {
+  id: Scalars['GlobalId']['input'];
+};
+
+
 export type MutationSetActiveVersionArgs = {
   key: Scalars['String']['input'];
   type: VersionType;
@@ -1625,6 +1685,11 @@ export type MutationSetActiveVersionArgs = {
 
 export type MutationSetPausedNobleQueuesByTypeArgs = {
   types: Array<NobleTaskType>;
+};
+
+
+export type MutationSetVariablesArgs = {
+  variables: Array<KeyValuePairInput>;
 };
 
 
@@ -1669,6 +1734,12 @@ export type MutationUpsertDevicesArgs = {
 };
 
 
+export type MutationUpsertDraftOrdersArgs = {
+  cloudshelfId: Scalars['GlobalId']['input'];
+  input: Array<DraftOrderInput>;
+};
+
+
 export type MutationUpsertLocationsArgs = {
   input: Array<LocationInput>;
 };
@@ -1708,6 +1779,11 @@ export type MutationUpsertShopifyOrganisationArgs = {
 
 export type MutationUpsertThemeArgs = {
   input: ThemeInput;
+};
+
+
+export type MutationUpsertUserArgs = {
+  input: UpsertUserInput;
 };
 
 /** Represents a a background processing job */
@@ -1798,14 +1874,14 @@ export type Order = {
   __typename?: 'Order';
   /** The date and time this entity was created. */
   createdAt: Scalars['DateTime']['output'];
-  deviceId: Scalars['String']['output'];
-  deviceName: Scalars['String']['output'];
+  deviceId?: Maybe<Scalars['String']['output']>;
+  deviceName?: Maybe<Scalars['String']['output']>;
   discountCode?: Maybe<Scalars['String']['output']>;
   /** A unique internal GlobalId for this entity. */
   id: Scalars['GlobalId']['output'];
   lines: Array<OrderLine>;
-  locationId: Scalars['String']['output'];
-  locationName: Scalars['String']['output'];
+  locationId?: Maybe<Scalars['String']['output']>;
+  locationName?: Maybe<Scalars['String']['output']>;
   owningOrganisation: Organisation;
   platformProvidedId?: Maybe<Scalars['GlobalId']['output']>;
   session?: Maybe<Session>;
@@ -1940,9 +2016,12 @@ export type Organisation = {
   products: Array<Product>;
   salesAssistantClearRule: ClearSalesAssistantRule;
   salesAssistantNameRule: SalesAssistantNameRule;
+  uninstallStarted: Scalars['Boolean']['output'];
   /** The date and time this entity was last updated. */
   updatedAt: Scalars['DateTime']['output'];
   users: Array<User>;
+  /** An array of KeyValuePairs which contain user provided variables to be used by Cloudshelf or Cloudshelf Extensions. */
+  variables: Array<KeyValuePair>;
 };
 
 export type OrganisationEdge = {
@@ -1951,6 +2030,15 @@ export type OrganisationEdge = {
   cursor?: Maybe<Scalars['String']['output']>;
   /** The Organisation entity */
   node?: Maybe<Organisation>;
+};
+
+export type OrganisationIngestStatsPayload = {
+  __typename?: 'OrganisationIngestStatsPayload';
+  productCount: Scalars['Int']['output'];
+  productGroupCount: Scalars['Int']['output'];
+  productGroupWithValidProductCount: Scalars['Int']['output'];
+  validProductCount: Scalars['Int']['output'];
+  variantCount: Scalars['Int']['output'];
 };
 
 export type OrganisationInput = {
@@ -2343,6 +2431,7 @@ export type Query = {
   includeableFilters: Array<CloudshelfIncludableFilter>;
   isInMaintenanceMode: Scalars['Boolean']['output'];
   isNobleEnabled: Scalars['Boolean']['output'];
+  isTrackedURLScanned: Scalars['Boolean']['output'];
   /** Returns a location entity */
   location?: Maybe<Location>;
   /** Returns a paginated array of locations */
@@ -2356,8 +2445,12 @@ export type Query = {
   orders: OrderPaginatedPayload;
   /** Returns an Organisation entity */
   organisation?: Maybe<Organisation>;
+  /** This is an internal function */
+  organisationIngestStats: OrganisationIngestStatsPayload;
   /** Returns if the install has been completed for an organisation */
   organisationInstallComplete?: Maybe<Scalars['Boolean']['output']>;
+  /** Returns a paginated array of user access rights for the current organisation */
+  organisationUsers: UserForOrganisationPaginatedPayload;
   /** Returns a paginated array of organisations */
   organisations: OrganisationPaginatedPayload;
   pausedNobleQueues: Array<NobleTaskType>;
@@ -2465,6 +2558,11 @@ export type QueryIncludeableFiltersArgs = {
 };
 
 
+export type QueryIsTrackedUrlScannedArgs = {
+  id: Scalars['GlobalId']['input'];
+};
+
+
 export type QueryLocationArgs = {
   id: Scalars['GlobalId']['input'];
 };
@@ -2500,8 +2598,23 @@ export type QueryOrganisationArgs = {
 };
 
 
+export type QueryOrganisationIngestStatsArgs = {
+  id: Scalars['GlobalId']['input'];
+};
+
+
 export type QueryOrganisationInstallCompleteArgs = {
   domain: Scalars['String']['input'];
+};
+
+
+export type QueryOrganisationUsersArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  sortBy?: InputMaybe<SortOptionsInput>;
+  textSearch?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -2643,6 +2756,11 @@ export type ShopifyStoreInput = {
   scopes?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Shopify storefront access token for the store */
   storefrontAccessToken?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ShopifyStoreUninstallInput = {
+  /** Domain of the shopify store */
+  domain: Scalars['String']['input'];
 };
 
 export type ShopifySubscriptionCheckData = {
@@ -2916,6 +3034,31 @@ export enum TouchIndicator {
   None = 'NONE'
 }
 
+export type TrackedUrlPayload = {
+  __typename?: 'TrackedURLPayload';
+  error?: Maybe<UserError>;
+  trackedUrl?: Maybe<TrackedUrlResponse>;
+};
+
+export type TrackedUrlResponse = {
+  __typename?: 'TrackedURLResponse';
+  id: Scalars['GlobalId']['output'];
+  url: Scalars['String']['output'];
+};
+
+export type UpsertUserInput = {
+  /** The email address of the user */
+  emailAddress: Scalars['String']['input'];
+  /** The first name of the user. (Only used if the email address does not already exist) */
+  firstName: Scalars['String']['input'];
+  hasDeletePermission: Scalars['Boolean']['input'];
+  hasWritePermission: Scalars['Boolean']['input'];
+  /** Use this field to provide either a Cloudshelf gid, or your own external gid. If the external gid already exists, the existing record will be updated. If the external gid does not exist, a new record will be created. */
+  id?: InputMaybe<Scalars['GlobalId']['input']>;
+  /** The last name of the user. (Only used if the email address does not already exist) */
+  lastName: Scalars['String']['input'];
+};
+
 export type UpsertVariantsInput = {
   /** Use this field to provide either a Cloudshelf gid, or your own external gid. If the external gid already exists, the existing record will be updated. If the external gid does not exist, a new record will be created. */
   productId: Scalars['GlobalId']['input'];
@@ -2927,7 +3070,7 @@ export type User = {
   actingAs?: Maybe<UserOrganisationAccess>;
   /** The date and time this entity was created. */
   createdAt: Scalars['DateTime']['output'];
-  email?: Maybe<Scalars['String']['output']>;
+  email: Scalars['String']['output'];
   firebaseIdentifier?: Maybe<Scalars['String']['output']>;
   firstName: Scalars['String']['output'];
   /** A unique internal GlobalId for this entity. */
@@ -2954,6 +3097,7 @@ export enum UserErrorCode {
   EntityCreationMissingField = 'ENTITY_CREATION_MISSING_FIELD',
   /** The data provided for the given upsert function was invalid for entity creation or updating */
   EntityInvalidField = 'ENTITY_INVALID_FIELD',
+  EntityInUse = 'ENTITY_IN_USE',
   EntityNotFound = 'ENTITY_NOT_FOUND',
   /** An error occurred while attempting to upload an image */
   ImageUploadError = 'IMAGE_UPLOAD_ERROR',
@@ -2961,6 +3105,46 @@ export enum UserErrorCode {
   InvalidHmac = 'INVALID_HMAC',
   UnknownError = 'UNKNOWN_ERROR'
 }
+
+export type UserForOrganisation = {
+  __typename?: 'UserForOrganisation';
+  emailAddress: Scalars['String']['output'];
+  firstName: Scalars['String']['output'];
+  hasAdminPermission: Scalars['Boolean']['output'];
+  hasDeletePermission: Scalars['Boolean']['output'];
+  hasWritePermission: Scalars['Boolean']['output'];
+  /** A unique internal for this users organisation access. */
+  id: Scalars['GlobalId']['output'];
+  lastName: Scalars['String']['output'];
+};
+
+export type UserForOrganisationEdge = {
+  __typename?: 'UserForOrganisationEdge';
+  /** The cursor for provided node to be used in pagination */
+  cursor?: Maybe<Scalars['String']['output']>;
+  /** The UserForOrganisation entity */
+  node?: Maybe<UserForOrganisation>;
+};
+
+export type UserForOrganisationPageInfo = {
+  __typename?: 'UserForOrganisationPageInfo';
+  /** The cursor for the last node in the page */
+  endCursor?: Maybe<Scalars['String']['output']>;
+  /** Whether or not there is a another page of data */
+  hasNextPage: Scalars['Boolean']['output'];
+  /** Whether or not there is a previous page of data */
+  hasPreviousPage: Scalars['Boolean']['output'];
+  /** The cursor for the first node in the page */
+  startCursor?: Maybe<Scalars['String']['output']>;
+};
+
+export type UserForOrganisationPaginatedPayload = {
+  __typename?: 'UserForOrganisationPaginatedPayload';
+  edges?: Maybe<Array<UserForOrganisationEdge>>;
+  pageInfo?: Maybe<UserForOrganisationPageInfo>;
+  /** The total number of items available */
+  totalCount: Scalars['Int']['output'];
+};
 
 export type UserInput = {
   /** The first name of the user */
@@ -2974,15 +3158,28 @@ export type UserInput = {
 export type UserOrganisationAccess = {
   __typename?: 'UserOrganisationAccess';
   apiKey?: Maybe<Scalars['String']['output']>;
+  /** The date and time this entity was created. */
+  createdAt: Scalars['DateTime']['output'];
   hasAdminAccess: Scalars['Boolean']['output'];
   hasDeleteAccess: Scalars['Boolean']['output'];
-  hasManagerAccess: Scalars['Boolean']['output'];
   hasWriteAccess: Scalars['Boolean']['output'];
+  /** A unique internal GlobalId for this entity. */
   id: Scalars['GlobalId']['output'];
-  isSalesAssistant: Scalars['Boolean']['output'];
+  isCloudshelfStaff: Scalars['Boolean']['output'];
   organisation: Organisation;
-  reference?: Maybe<Scalars['String']['output']>;
+  /** The date and time this entity was last updated. */
+  updatedAt: Scalars['DateTime']['output'];
   user: User;
+};
+
+export type UserUpsertPayload = {
+  __typename?: 'UserUpsertPayload';
+  /** The user that has been created (or added to the organisation) */
+  user?: Maybe<User>;
+  /** An array of errors that occurred during the upsert operation */
+  userErrors: Array<UserError>;
+  /** The user organisation access that has been updated (or added to the organisation) */
+  userOrganisationAccess?: Maybe<UserOrganisationAccess>;
 };
 
 export enum VersionType {
@@ -3096,6 +3293,15 @@ export const UpsertStoreDocument = gql`
       code
     }
   }
+}
+    `;
+export const MarkUninstalledDocument = gql`
+    mutation MarkUninstalled($input: ShopifyStoreUninstallInput!, $hmac: String!, $nonce: String!) {
+  markShopifyOrganisationUninstallStarted(
+    input: $input
+    hmac: $hmac
+    nonce: $nonce
+  )
 }
     `;
 export const IsInstallCompletedDocument = gql`
@@ -3246,6 +3452,15 @@ export type UpsertStoreMutationVariables = Exact<{
 
 
 export type UpsertStoreMutation = { __typename?: 'Mutation', upsertShopifyOrganisation: { __typename?: 'OrganisationUpsertPayload', organisation?: { __typename?: 'Organisation', id: any } | null, userErrors: Array<{ __typename?: 'UserError', message: string, code: UserErrorCode }> } };
+
+export type MarkUninstalledMutationVariables = Exact<{
+  input: ShopifyStoreUninstallInput;
+  hmac: Scalars['String']['input'];
+  nonce: Scalars['String']['input'];
+}>;
+
+
+export type MarkUninstalledMutation = { __typename?: 'Mutation', markShopifyOrganisationUninstallStarted: boolean };
 
 export type IsInstallCompletedQueryVariables = Exact<{
   domain: Scalars['String']['input'];

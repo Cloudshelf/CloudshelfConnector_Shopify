@@ -41,6 +41,7 @@ export class ShopifyStoreController {
       return 400;
     }
 
+    await Container.shopifyStoreService.markUninstalled(shopDomain);
     await Container.shopifyService.deleteAllSessions(shopDomain);
     await Container.shopifyStoreService.removeFromDatabase(shopDomain);
     await Container.slackService.sendUninstallNotification(shopDomain);

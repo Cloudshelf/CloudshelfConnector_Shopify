@@ -143,3 +143,6 @@ environment-variants/
 .snapshot*
 
 build/
+
+# Sentry Config File
+.sentryclirc

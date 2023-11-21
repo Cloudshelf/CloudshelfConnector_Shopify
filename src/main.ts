@@ -35,21 +35,6 @@ Sentry.init({
 
 (async () => {
   console.log("Starting up....");
-  const transaction = Sentry.startTransaction({
-    op: "test",
-    name: "My First Test Transaction",
-  });
-
-  setTimeout(() => {
-    try {
-      // do nothing
-    } catch (e) {
-      Sentry.captureException(e);
-    } finally {
-      transaction.finish();
-    }
-  }, 99);
-
   Error.stackTraceLimit = 100;
   const app = express();
 

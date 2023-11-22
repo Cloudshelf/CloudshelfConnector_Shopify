@@ -146,3 +146,6 @@ build/
 
 # Sentry Config File
 .sentryclirc
+
+.DS_Store
+.github/.DS_Store

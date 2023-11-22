@@ -10,7 +10,7 @@ on:
 jobs:
   version:
     environment: ${{ github.head_ref || github.ref_name }}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       # Checkout branch
@@ -34,7 +34,7 @@ jobs:
   build-and-deploy:
     needs: version
     environment: ${{ github.head_ref || github.ref_name }}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       id-token: write
       contents: read

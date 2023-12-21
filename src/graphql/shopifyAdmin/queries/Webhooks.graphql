@@ -1,0 +1,36 @@
+query Webhooks($after: String) {
+    webhookSubscriptions(first: 10, after: $after) {
+      pageInfo {
+          hasNextPage
+          endCursor
+      }
+      edges {
+          node {
+              id
+              topic
+          }
+      }
+    }
+}
+
+mutation RegisterWebhook($topic: WebhookSubscriptionTopic!, $subscription: WebhookSubscriptionInput!) {
+    webhookSubscriptionCreate(topic: $topic, webhookSubscription: $subscription) {
+        webhookSubscription {
+            id
+        }
+        userErrors {
+            field
+            message
+        }
+    }
+}
+
+mutation DeleteWebhook($id: ID!) {
+    webhookSubscriptionDelete(id: $id) {
+        deletedWebhookSubscriptionId
+        userErrors {
+            field
+            message
+        }
+    }
+}

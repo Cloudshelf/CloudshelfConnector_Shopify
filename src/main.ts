@@ -21,6 +21,8 @@ import {
 } from "./graphql/cloudshelf/generated/cloudshelf";
 import { createThemeJob } from "./modules/queue/queues/theme/theme.job.functions";
 import { QueueController } from "./modules/queue/queue.controller";
+import { MetricsController } from "./modules/metrics/metrics.controller";
+import { WebhookController } from "./modules/webhook/webhook.controller";
 import * as Sentry from "@sentry/node";
 
 dotenv.config();
@@ -64,6 +66,8 @@ Sentry.init({
       DebugController,
       BulkOperationController,
       QueueController,
+      MetricsController,
+      WebhookController,
     ],
     routePrefix: "/app",
   });

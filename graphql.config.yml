@@ -5,4 +5,6 @@ projects:
   shopify:
     schema: src/graphql/shopify/generated/shopify.schema.json
     documents: src/graphql/shopify/**/*.graphql
-
+  shopifyAdmin:
+    schema: src/graphql/shopifyAdmin/generated/shopifyAdmin.schema.json
+    documents: src/graphql/shopifyAdmin/**/*.graphql

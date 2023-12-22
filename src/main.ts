@@ -22,11 +22,27 @@ import {
 import { createThemeJob } from "./modules/queue/queues/theme/theme.job.functions";
 import { QueueController } from "./modules/queue/queue.controller";
 import { MetricsController } from "./modules/metrics/metrics.controller";
+import { WebhookController } from "./modules/webhook/webhook.controller";
+import * as Sentry from "@sentry/node";
 
 dotenv.config();
 
+Sentry.init({
+  dsn: process.env.SENTRY_DNS,
+  tracesSampleRate: 1.0,
+  environment: process.env.RELEASE_TYPE ?? "local",
+  release: process.env.PACKAGE_VERSION ?? "development_local",
+  ignoreErrors: [],
+});
+
 (async () => {
   console.log("Starting up....");
+
+  Sentry.startTransaction({
+    op: "Startup",
+    name: "Application Startup",
+  }).finish();
+
   Error.stackTraceLimit = 100;
   const app = express();
 
@@ -51,6 +67,7 @@ dotenv.config();
       BulkOperationController,
       QueueController,
       MetricsController,
+      WebhookController,
     ],
     routePrefix: "/app",
   });
@@ -303,8 +320,9 @@ dotenv.config();
       }
 
       if (session) {
-        const store =
-          await Container.shopifyStoreService.findStoreByDomain(shop);
+        const store = await Container.shopifyStoreService.findStoreByDomain(
+          shop,
+        );
         if (!store && session.accessToken) {
           console.log("Creating store (again?)");
           await Container.shopifyStoreService.upsertStore(

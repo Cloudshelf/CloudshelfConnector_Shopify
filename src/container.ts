@@ -7,6 +7,7 @@ import { QueueService } from "./modules/queue/queue.service";
 import { BulkOperationService } from "./modules/bulkOperation/bulk-opertation.service";
 import { BulkOperationController } from "./modules/bulkOperation/bulk-operation.controller";
 import { SlackService } from "./modules/slack/slack.service";
+import { WebhookService } from "./modules/webhook/webhook.service";
 
 export class Container {
   private static _initialised = false;
@@ -17,6 +18,7 @@ export class Container {
   private static _queueService: QueueService;
   private static _bulkOperationService: BulkOperationService;
   private static _slackService: SlackService;
+  private static _webhookService: WebhookService;
   static customTokens: { [domain: string]: string } = {};
 
   static async initialise() {
@@ -29,6 +31,7 @@ export class Container {
     this._queueService = new QueueService();
     this._bulkOperationService = new BulkOperationService();
     this._slackService = new SlackService();
+    this._webhookService = new WebhookService();
 
     this._initialised = true;
     console.debug("Container initialised");
@@ -90,5 +93,11 @@ export class Container {
     this.throwIfNotInitialised();
 
     return this._slackService;
+  }
+
+  static get webhookService(): WebhookService {
+    this.throwIfNotInitialised();
+
+    return this._webhookService;
   }
 }

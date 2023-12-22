@@ -1,4 +1,4 @@
-export const enum QueueNames {
+export enum QueueNames {
   TEST = "TEST",
   THEME = "THEME",
   LOCATION = "LOCATION",

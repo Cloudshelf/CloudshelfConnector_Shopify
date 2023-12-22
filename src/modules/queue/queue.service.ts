@@ -8,6 +8,15 @@ import {
   Worker,
 } from "bullmq";
 import { QueueNames } from "./queue.names.const";
+import differenceInHours from "date-fns/differenceInHours";
+import { Container } from "../../container";
+import { snakeToSentence } from "../../utils/format";
+import { differenceInMinutes, formatDistance } from "date-fns";
+
+const WARNING_AGE_IN_HOURS = 2;
+const SEVERE_AGE_IN_HOURS = 4;
+const COMPLETION_RATIO_DEGRADED = 0.95;
+const COMPLETION_RATIO_CRITICAL = 0.25;
 
 export class QueueService {
   // Redis client
@@ -67,6 +76,13 @@ export class QueueService {
         try {
           res = await processor(job);
         } catch (ex) {
+          if (ex instanceof DelayedError) {
+            /*console.log(
+              `Releasing lock for job '${job.name}:${job.id}', lockId: ${job.data.lockId}`,
+            );*/
+            await this.releaseLock(job.data.lockId);
+            throw ex;
+          }
           console.log(
             "Error processing job",
             JSON.stringify(ex, Object.getOwnPropertyNames(ex), 2),
@@ -138,7 +154,6 @@ export class QueueService {
       "delayed",
       "prioritized",
     ]);
-
     const pendingJobs = allPendingJobs.filter(
       (job) => job.data.domain === domain,
     );
@@ -157,5 +172,136 @@ export class QueueService {
     }
 
     return pendingJobs[0];
+  }
+
+  async checkQueueHealth(queueName: string) {
+    const warnings: string[] = [];
+    const severeAlerts: string[] = [];
+
+    const queue = this.queues[queueName];
+
+    // Check number & age of waiting jobs
+    let waitingJobs = await queue.getJobs([
+      "waiting",
+      "delayed",
+      "prioritized",
+    ]);
+    waitingJobs = waitingJobs
+      .sort((a, b) => {
+        if (a.timestamp < b.timestamp) {
+          return -1;
+        } else if (a.timestamp > b.timestamp) {
+          return 1;
+        } else {
+          return 0;
+        }
+      })
+      .filter((j) => !isNaN(j.timestamp));
+    if (waitingJobs.length > 0) {
+      const oldestJob = waitingJobs[0];
+      const date = new Date(oldestJob.timestamp);
+      const diff = differenceInHours(new Date(), date);
+      const alert = `Queue has *${
+        waitingJobs.length
+      }* waiting jobs, the oldest of which is *${formatDistance(
+        new Date(),
+        date,
+      )}* old`;
+
+      if (diff > SEVERE_AGE_IN_HOURS) {
+        severeAlerts.push(alert);
+      } else if (diff > WARNING_AGE_IN_HOURS) {
+        warnings.push(alert);
+      }
+    }
+
+    // Check recent job completion rate
+    const allJobs = await queue.getJobs();
+    const recentJobs = allJobs.filter(
+      (j) =>
+        !isNaN(j.timestamp) &&
+        differenceInMinutes(new Date(), new Date(j.timestamp)) <= 90 &&
+        differenceInMinutes(new Date(), new Date(j.timestamp)) >= 30,
+    );
+    if (recentJobs.length > 0) {
+      const completedRecentJobs = recentJobs.filter((j) => !!j.finishedOn);
+      const ratio = completedRecentJobs.length / recentJobs.length;
+      const alert = `Recent job completion rate is ${(100 * ratio).toFixed(
+        0,
+      )}%`;
+      if (ratio < COMPLETION_RATIO_CRITICAL) {
+        severeAlerts.push(alert);
+      } else if (ratio < COMPLETION_RATIO_DEGRADED) {
+        warnings.push(alert);
+      }
+    }
+
+    // Send slack alerts if necessary
+    const slackService = Container.slackService;
+    if (warnings.length > 0) {
+      await slackService.sendQueueHealthStatus(
+        snakeToSentence(queueName),
+        warnings,
+        "warn",
+      );
+    }
+    if (severeAlerts.length > 0) {
+      await slackService.sendQueueHealthStatus(
+        snakeToSentence(queueName),
+        severeAlerts,
+        "critical",
+      );
+    }
+  }
+
+  async checkSyncHealth() {
+    const warnings: string[] = [];
+    const severeAlerts: string[] = [];
+    const stores = await Container.shopifyStoreService.getAllStores();
+    const groupQueue = this.queues[QueueNames.PRODUCT_GROUP_PROCESSOR];
+    const productQueue = this.queues[QueueNames.PRODUCT_PROCESSOR];
+    const completedProductSyncs = (await productQueue.getCompleted()).filter(
+      (job) =>
+        job.finishedOn &&
+        differenceInHours(new Date(), new Date(job.finishedOn)) <= 28,
+    );
+    const completedProductGroupSyncs = (await groupQueue.getCompleted()).filter(
+      (job) =>
+        job.finishedOn &&
+        differenceInHours(new Date(), new Date(job.finishedOn)) <= 28,
+    );
+
+    for (const store of stores) {
+      const productSync = completedProductSyncs.find(
+        (job) => job.data.domain === store.domain,
+      );
+      const productGroupSync = completedProductGroupSyncs.find(
+        (job) => job.data.domain === store.domain,
+      );
+
+      if (!productSync && !productGroupSync) {
+        severeAlerts.push(
+          `${store.domain} has not synced products OR product groups in the last 24 hours`,
+        );
+      } else if (!productSync) {
+        warnings.push(
+          `${store.domain} has not synced products in the last 24 hours`,
+        );
+      } else if (!productGroupSync) {
+        warnings.push(
+          `${store.domain} has not synced product groups in the last 24 hours`,
+        );
+      }
+    }
+
+    if (warnings.length > 0) {
+      await Container.slackService.sendSyncHealthStatus(warnings, "warn");
+    }
+    if (severeAlerts.length > 0) {
+      await Container.slackService.sendSyncHealthStatus(
+        severeAlerts,
+        "critical",
+      );
+    }
   }
 }

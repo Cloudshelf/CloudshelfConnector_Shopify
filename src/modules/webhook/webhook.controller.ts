@@ -11,8 +11,8 @@ export class WebhookController {
     if (token === process.env.WEBHOOK_ADMIN_TOKEN) {
       await Container.initialise();
       const webhookService = Container.webhookService;
-      await webhookService.deleteAllWebhooksForAllStores();
-      return "OK";
+      const result = await webhookService.deleteAllWebhooksForAllStores();
+      return "OK: " + JSON.stringify(result);
     }
     throw new UnauthorizedError();
   }
@@ -25,8 +25,8 @@ export class WebhookController {
     if (token === process.env.WEBHOOK_ADMIN_TOKEN) {
       await Container.initialise();
       const webhookService = Container.webhookService;
-      await webhookService.registerAllWebhooksForAllStores();
-      return "OK";
+      const result = await webhookService.registerAllWebhooksForAllStores();
+      return "OK " + JSON.stringify(result);
     }
     throw new UnauthorizedError();
   }

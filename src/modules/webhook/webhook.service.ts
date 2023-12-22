@@ -132,7 +132,7 @@ export class WebhookService {
       await this.registerWebhookForStore(
         storeDomain,
         WebhookSubscriptionTopic.BulkOperationsFinish,
-        `https://${process.env.MANAGER_HOSTNAME}/app/webhooks/bulkoperation/complete`,
+        `https://${process.env.PUBLIC_HOSTNAME}/app/webhooks/bulkoperation/complete`,
       );
     }
 
@@ -144,7 +144,7 @@ export class WebhookService {
       await this.registerWebhookForStore(
         storeDomain,
         WebhookSubscriptionTopic.AppUninstalled,
-        `https://${process.env.MANAGER_HOSTNAME}/app/webhooks/shopify-store/uninstalled`,
+        `https://${process.env.PUBLIC_HOSTNAME}/app/webhooks/shopify-store/uninstalled`,
       );
     }
 
@@ -156,7 +156,7 @@ export class WebhookService {
       await this.registerWebhookForStore(
         storeDomain,
         WebhookSubscriptionTopic.ProductsUpdate,
-        `https://${process.env.MANAGER_HOSTNAME}/app/webhooks/shopify-store/product-update`,
+        `https://${process.env.PUBLIC_HOSTNAME}/app/webhooks/shopify-store/product-update`,
       );
     }
 
@@ -168,7 +168,7 @@ export class WebhookService {
       await this.registerWebhookForStore(
         storeDomain,
         WebhookSubscriptionTopic.ProductsDelete,
-        `https://${process.env.MANAGER_HOSTNAME}/app/webhooks/shopify-store/product-delete`,
+        `https://${process.env.PUBLIC_HOSTNAME}/app/webhooks/shopify-store/product-delete`,
       );
     }
 
@@ -180,7 +180,7 @@ export class WebhookService {
       await this.registerWebhookForStore(
         storeDomain,
         WebhookSubscriptionTopic.CollectionsUpdate,
-        `https://${process.env.MANAGER_HOSTNAME}/app/webhooks/shopify-store/collection-update`,
+        `https://${process.env.PUBLIC_HOSTNAME}/app/webhooks/shopify-store/collection-update`,
       );
     }
 
@@ -192,7 +192,7 @@ export class WebhookService {
       await this.registerWebhookForStore(
         storeDomain,
         WebhookSubscriptionTopic.CollectionsDelete,
-        `https://${process.env.MANAGER_HOSTNAME}/app/webhooks/shopify-store/collection-delete`,
+        `https://${process.env.PUBLIC_HOSTNAME}/app/webhooks/shopify-store/collection-delete`,
       );
     }
 
@@ -204,22 +204,47 @@ export class WebhookService {
       await this.registerWebhookForStore(
         storeDomain,
         WebhookSubscriptionTopic.AppSubscriptionsUpdate,
-        `https://${process.env.MANAGER_HOSTNAME}/app/webhooks/shopify-store/app-subscriptions-update`,
+        `https://${process.env.PUBLIC_HOSTNAME}/app/webhooks/shopify-store/app-subscriptions-update`,
       );
     }
   }
 
-  async registerAllWebhooksForAllStores() {
+  async registerAllWebhooksForAllStores(): Promise<{
+    success: string[];
+    failed: string[];
+  }> {
+    const failed: string[] = [];
+    const success: string[] = [];
+
     const stores = await Container.shopifyStoreService.getAllStores();
     for (const store of stores) {
-      await this.registerAllWebhooksForStore(store.domain);
+      try {
+        await this.registerAllWebhooksForStore(store.domain);
+        success.push(store.domain);
+      } catch (e) {
+        failed.push(store.domain);
+      }
     }
+
+    return { success, failed };
   }
 
-  async deleteAllWebhooksForAllStores() {
+  async deleteAllWebhooksForAllStores(): Promise<{
+    success: string[];
+    failed: string[];
+  }> {
+    const failed: string[] = [];
+    const success: string[] = [];
     const stores = await Container.shopifyStoreService.getAllStores();
     for (const store of stores) {
-      await this.deleteAllWebhooksForStore(store.domain);
+      try {
+        await this.deleteAllWebhooksForStore(store.domain);
+        success.push(store.domain);
+      } catch (e) {
+        failed.push(store.domain);
+      }
     }
+
+    return { success, failed };
   }
 }

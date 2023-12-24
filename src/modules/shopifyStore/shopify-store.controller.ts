@@ -20,6 +20,7 @@ import { AppSubscriptionUpdateWebhookPayload } from "./dtos/app-subscription-upd
 import { gidBuilder, gidConverter } from "../../utils/gidConverter";
 import { createProductTriggerJob } from "../queue/queues/product/product.job.functions";
 import { createProductGroupTriggerJob } from "../queue/queues/productgroup/productgroup.job.functions";
+import * as Sentry from "@sentry/node";
 
 @JsonController("/webhooks/shopify-store")
 @UseBefore(WebhookAuthenticationMiddleware)
@@ -35,6 +36,15 @@ export class ShopifyStoreController {
     console.log("Received store uninstall webhook");
 
     const shopDomain = req.get("x-shopify-shop-domain");
+
+    Sentry.startTransaction({
+      op: "Webhook:Received",
+      name: "Received store uninstalled webhook",
+      data: {
+        body,
+        shopDomain,
+      },
+    }).finish();
 
     if (!shopDomain) {
       console.error("No shop domain in header");
@@ -56,6 +66,15 @@ export class ShopifyStoreController {
   async customerDataRequest(@Req() req: Request, @Body() body: any) {
     console.log("Received store customers/data_request webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
+
+    Sentry.startTransaction({
+      op: "Webhook:Received",
+      name: "Received store data request webhook",
+      data: {
+        body,
+        shopDomain,
+      },
+    }).finish();
 
     if (!shopDomain) {
       console.error("No shop domain in header");
@@ -93,6 +112,15 @@ export class ShopifyStoreController {
     console.log("Received shop/redact webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
 
+    Sentry.startTransaction({
+      op: "Webhook:Received",
+      name: "Received store redact webhook",
+      data: {
+        body,
+        shopDomain,
+      },
+    }).finish();
+
     if (!shopDomain) {
       console.error("No shop domain in header");
       return 400;
@@ -113,6 +141,15 @@ export class ShopifyStoreController {
   ) {
     console.log("Received product update webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
+
+    Sentry.startTransaction({
+      op: "Webhook:Received",
+      name: "Received product update webhook",
+      data: {
+        body,
+        shopDomain,
+      },
+    }).finish();
 
     if (!shopDomain) {
       console.error("No shop domain in header");
@@ -137,6 +174,15 @@ export class ShopifyStoreController {
     console.log("Received product delete webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
 
+    Sentry.startTransaction({
+      op: "Webhook:Received",
+      name: "Received product delete webhook",
+      data: {
+        body,
+        shopDomain,
+      },
+    }).finish();
+
     if (!shopDomain) {
       console.error("No shop domain in header");
       return 400;
@@ -156,6 +202,15 @@ export class ShopifyStoreController {
   ) {
     console.log("Received collection update webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
+
+    Sentry.startTransaction({
+      op: "Webhook:Received",
+      name: "Received collection update webhook",
+      data: {
+        body,
+        shopDomain,
+      },
+    }).finish();
 
     if (!shopDomain) {
       console.error("No shop domain in header");
@@ -180,6 +235,15 @@ export class ShopifyStoreController {
     console.log("Received collection delete webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
 
+    Sentry.startTransaction({
+      op: "Webhook:Received",
+      name: "Received collection delete webhook",
+      data: {
+        body,
+        shopDomain,
+      },
+    }).finish();
+
     if (!shopDomain) {
       console.error("No shop domain in header");
       return 400;
@@ -202,6 +266,15 @@ export class ShopifyStoreController {
   ) {
     console.log("Received app subscription webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
+
+    Sentry.startTransaction({
+      op: "Webhook:Received",
+      name: "Received subscription update webhook",
+      data: {
+        body,
+        shopDomain,
+      },
+    }).finish();
 
     if (!shopDomain) {
       console.error("No shop domain in header");

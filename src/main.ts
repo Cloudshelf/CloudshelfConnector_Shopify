@@ -364,6 +364,8 @@ Sentry.init({
   );
   ///////
 
+  app.use(Sentry.Handlers.errorHandler());
+
   // In the event of an unexpected error, return a 500
   app.use(function (
     err: Error,

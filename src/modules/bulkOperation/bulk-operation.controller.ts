@@ -13,6 +13,7 @@ import { BulkOperationType } from "./bulk-operation.type";
 import { createProductJob } from "../queue/queues/product/product.job.functions";
 import { createProductGroupJob } from "../queue/queues/productgroup/productgroup.job.functions";
 import { Request } from "express";
+import * as Sentry from "@sentry/node";
 
 @JsonController("/webhooks/bulkoperation")
 @UseBefore(WebhookAuthenticationMiddleware)
@@ -25,10 +26,18 @@ export class BulkOperationController {
     @Req() req: Request,
     @Body() body: BulkOperationWebhookPayload,
   ) {
-    console.log("Received bulkOpComplete webhook");
-
     const shopDomain = req.get("x-shopify-shop-domain"); //req.headers["x-shopify-shop-domain"] ?? undefined;
     const topic = req.get("x-shopify-topic"); //req.headers["x-shopify-topic"] ?? undefined;
+
+    Sentry.startTransaction({
+      op: "Webhook:Received",
+      name: "Received bulkOpComplete webhook",
+      data: {
+        body,
+        shopDomain,
+      },
+    }).finish();
+    console.log("Received bulkOpComplete webhook");
 
     if (!shopDomain || !topic) {
       console.log("bulkOpComplete webhook had invalid headers");

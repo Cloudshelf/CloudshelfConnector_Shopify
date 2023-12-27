@@ -151,7 +151,7 @@ export class QueueService {
       "findJobForDomainAndQueue",
       queueName,
       domain,
-      "existing queues:" + this.queues,
+      "existing queues:" + JSON.stringify(this.queues),
     );
 
     const queue = this.queues[queueName];

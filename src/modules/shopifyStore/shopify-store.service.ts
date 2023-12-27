@@ -89,9 +89,16 @@ export class ShopifyStoreService {
   async getAllStoresThatHaveNotSyncedInOneDay() {
     const em = Container.entityManager.fork();
     return em.find(ShopifyStore, {
-      lastSafetySync: {
-        $lt: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
-      },
+      $or: [
+        {
+          lastSafetySync: {
+            $lt: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+          },
+        },
+        {
+          lastSafetySync: null,
+        },
+      ],
     });
   }
 

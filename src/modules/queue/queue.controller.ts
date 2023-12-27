@@ -27,13 +27,17 @@ export class QueueController {
     const stores =
       await Container.shopifyStoreService.getAllStoresThatHaveNotSyncedInOneDay();
 
+    console.log(`Found ${stores.length} stores to safety sync`);
+
     if (stores.length > 0) {
+      const storeDomains = stores.map((store) => store.domain).join(", ");
+      console.log("Scheduling safety syncs: " + storeDomains);
       Sentry.startTransaction({
         op: "Noble:SafetySync",
         name: "Queued Safety Syncs",
         data: {
           total: stores.length,
-          stores: stores.map((store) => store.domain),
+          stores: storeDomains,
         },
       }).finish();
 
@@ -43,6 +47,7 @@ export class QueueController {
 
       await Container.shopifyStoreService.markAsSafetySyncRequested(stores);
     }
+    console.log("Finished handling safety sync request");
     return 200;
   }
 }

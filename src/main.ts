@@ -29,6 +29,7 @@ dotenv.config();
     environment: process.env.RELEASE_TYPE ?? "local",
     release: process.env.PACKAGE_VERSION ?? "development_local",
     ignoreErrors: [],
+    ignoreTransactions: ["/_next/", "/img/", /^\/$/, /^\/\*$/],
     integrations: [
       // enable HTTP calls tracing
       new Sentry.Integrations.Http({ tracing: true }),

@@ -63,6 +63,10 @@ dotenv.config();
   // TracingHandler creates a trace for every incoming request
   app.use(Sentry.Handlers.tracingHandler());
 
+  app.get("/crash", (req, res) => {
+    throw new Error("Test crash");
+  });
+
   app.get("/FORCE", async (req, res, next) => {
     // await createThemeJob("cs-connector-store.myshopify.com", true);
     await createThemeJob("csl-fashion-2021.myshopify.com", true);

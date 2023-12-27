@@ -22,6 +22,14 @@ export class ShopifyStorefrontClient {
       headers: {
         "X-Shopify-Storefront-Access-Token": store.storefrontToken,
       },
+      defaultOptions: {
+        query: {
+          errorPolicy: "all",
+        },
+        mutate: {
+          errorPolicy: "all",
+        },
+      },
     });
   }
 }

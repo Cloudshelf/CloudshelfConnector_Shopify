@@ -40,6 +40,14 @@ export class CloudshelfClientFactory {
     return new ApolloClient({
       cache: new InMemoryCache(),
       link: from([authLink, httpLink]),
+      defaultOptions: {
+        query: {
+          errorPolicy: "all",
+        },
+        mutate: {
+          errorPolicy: "all",
+        },
+      },
     });
   }
 }

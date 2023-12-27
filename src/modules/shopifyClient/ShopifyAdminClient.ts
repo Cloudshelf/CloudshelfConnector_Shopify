@@ -33,6 +33,14 @@ export class ShopifyAdminClient {
       headers: {
         "X-Shopify-Access-Token": accessToken,
       },
+      defaultOptions: {
+        query: {
+          errorPolicy: "all",
+        },
+        mutate: {
+          errorPolicy: "all",
+        },
+      },
     });
   }
 }

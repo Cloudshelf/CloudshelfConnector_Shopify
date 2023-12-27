@@ -12,6 +12,7 @@ import differenceInHours from "date-fns/differenceInHours";
 import { Container } from "../../container";
 import { snakeToSentence } from "../../utils/format";
 import { differenceInMinutes, formatDistance } from "date-fns";
+import { inspect } from "util";
 
 const WARNING_AGE_IN_HOURS = 2;
 const SEVERE_AGE_IN_HOURS = 4;
@@ -151,7 +152,7 @@ export class QueueService {
       "findJobForDomainAndQueue",
       queueName,
       domain,
-      "existing queues:" + JSON.stringify(this.queues),
+      "existing queues:" + inspect(this.queues),
     );
 
     const queue = this.queues[queueName];

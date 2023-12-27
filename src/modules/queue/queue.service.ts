@@ -15,7 +15,7 @@ import { differenceInMinutes, formatDistance } from "date-fns";
 
 const WARNING_AGE_IN_HOURS = 2;
 const SEVERE_AGE_IN_HOURS = 4;
-const COMPLETION_RATIO_DEGRADED = 0.95;
+const COMPLETION_RATIO_DEGRADED = 0.75;
 const COMPLETION_RATIO_CRITICAL = 0.25;
 
 export class QueueService {

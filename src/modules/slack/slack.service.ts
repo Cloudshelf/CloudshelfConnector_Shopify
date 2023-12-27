@@ -24,7 +24,7 @@ export class SlackService {
       }
       await this.slackClient.chat.postMessage({
         channel: process.env.SLACK_CHANNEL ?? "",
-        text: "<!subteam^S02QBD8KNUQ|Sales>",
+        text: " ", //<!subteam^S02QBD8KNUQ|Sales>
         username: prepend + "Shopify Connector - Cloudshelf Notifier",
         attachments: [
           {
@@ -61,7 +61,7 @@ ${domain}`,
       }
       await this.slackClient.chat.postMessage({
         channel: process.env.SLACK_CHANNEL ?? "",
-        text: "<!subteam^S02QBD8KNUQ|Sales>",
+        text: " ", //<!subteam^S02QBD8KNUQ|Sales>
         username: prepend + "Shopify Connector - Cloudshelf Notifier",
         attachments: [
           {

@@ -516,6 +516,8 @@ export class ShopifyStoreService {
       store.lastSafetySync = new Date();
     }
 
+    em.persist(stores);
+
     await em.flush();
   }
 }

@@ -17,10 +17,15 @@ export class SlackService {
   //test
   async sendInstallNotification(domain: string, force: boolean = false) {
     if (isProduction() || force) {
+      let prepend = "";
+
+      if (!isProduction()) {
+        prepend = "[DEVELOPMENT] ";
+      }
       await this.slackClient.chat.postMessage({
         channel: process.env.SLACK_CHANNEL ?? "",
         text: "<!subteam^S02QBD8KNUQ|Sales>",
-        username: "Shopify Connector - Cloudshelf Notifier",
+        username: prepend + "Shopify Connector - Cloudshelf Notifier",
         attachments: [
           {
             color: "#1A9C27",
@@ -49,10 +54,15 @@ ${domain}`,
 
   async sendUninstallNotification(domain: string, force: boolean = false) {
     if (isProduction() || force) {
+      let prepend = "";
+
+      if (!isProduction()) {
+        prepend = "[DEVELOPMENT] ";
+      }
       await this.slackClient.chat.postMessage({
         channel: process.env.SLACK_CHANNEL ?? "",
         text: "<!subteam^S02QBD8KNUQ|Sales>",
-        username: "Shopify Connector - Cloudshelf Notifier",
+        username: prepend + "Shopify Connector - Cloudshelf Notifier",
         attachments: [
           {
             color: "#FF0000",
@@ -84,10 +94,15 @@ The store has been removed from the Cloudshelf Connector. Store data will not be
 
   async sendStoreRedactNotification(domain: string, force: boolean = false) {
     if (isProduction() || force) {
+      let prepend = "";
+
+      if (!isProduction()) {
+        prepend = "[DEVELOPMENT] ";
+      }
       await this.slackClient.chat.postMessage({
         channel: process.env.SLACK_CHANNEL ?? "",
         text: " ",
-        username: "Shopify Connector - Cloudshelf Notifier",
+        username: prepend + "Shopify Connector - Cloudshelf Notifier",
         attachments: [
           {
             color: "#FFB700",

@@ -137,10 +137,16 @@ Store data will shortly be removed from Cloudshelf.`,
     messages: string[],
     severity: "warn" | "critical",
   ) {
+    let prepend = "";
+
+    if (!isProduction()) {
+      prepend = "[DEVELOPMENT] ";
+    }
+
     await this.slackClient.chat.postMessage({
-      channel: process.env.SLACK_CHANNEL ?? "",
+      channel: process.env.SLACK_HEALTH_CHANNEL ?? "",
       text: " ",
-      username: "Shopify Connector - Cloudshelf Notifier",
+      username: prepend + "Shopify Connector - Cloudshelf Notifier",
       attachments: [
         {
           color: severity === "warn" ? "#FFB700" : "#FF0000",
@@ -172,10 +178,16 @@ Store data will shortly be removed from Cloudshelf.`,
     messages: string[],
     severity: "warn" | "critical",
   ) {
+    let prepend = "";
+
+    if (!isProduction()) {
+      prepend = "[DEVELOPMENT] ";
+    }
+
     await this.slackClient.chat.postMessage({
-      channel: process.env.SLACK_CHANNEL ?? "",
+      channel: process.env.SLACK_HEALTH_CHANNEL ?? "",
       text: " ",
-      username: "Shopify Connector - Cloudshelf Notifier",
+      username: prepend + "Shopify Connector - Cloudshelf Notifier",
       attachments: [
         {
           color: severity === "warn" ? "#FFB700" : "#FF0000",

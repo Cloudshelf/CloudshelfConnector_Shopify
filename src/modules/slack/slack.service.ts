@@ -8,14 +8,15 @@ export class SlackService {
     this.slackClient = new WebClient(process.env.SLACK_TOKEN);
   }
 
-  async test() {
-    this.sendInstallNotification("something.com");
-    this.sendUninstallNotification("something.com");
-    this.sendStoreRedactNotification("something.com");
+  async test(force: boolean = false) {
+    this.sendInstallNotification("cloudshelf-connector-test.com", force);
+    this.sendUninstallNotification("cloudshelf-connector-test.com", force);
+    this.sendStoreRedactNotification("cloudshelf-connector-test.com", force);
   }
+
   //test
-  async sendInstallNotification(domain: string) {
-    if (isProduction()) {
+  async sendInstallNotification(domain: string, force: boolean = false) {
+    if (isProduction() || force) {
       await this.slackClient.chat.postMessage({
         channel: process.env.SLACK_CHANNEL ?? "",
         text: "<!subteam^S02QBD8KNUQ|Sales>",
@@ -46,8 +47,8 @@ ${domain}`,
     }
   }
 
-  async sendUninstallNotification(domain: string) {
-    if (isProduction()) {
+  async sendUninstallNotification(domain: string, force: boolean = false) {
+    if (isProduction() || force) {
       await this.slackClient.chat.postMessage({
         channel: process.env.SLACK_CHANNEL ?? "",
         text: "<!subteam^S02QBD8KNUQ|Sales>",
@@ -81,8 +82,8 @@ The store has been removed from the Cloudshelf Connector. Store data will not be
     }
   }
 
-  async sendStoreRedactNotification(domain: string) {
-    if (isProduction()) {
+  async sendStoreRedactNotification(domain: string, force: boolean = false) {
+    if (isProduction() || force) {
       await this.slackClient.chat.postMessage({
         channel: process.env.SLACK_CHANNEL ?? "",
         text: " ",

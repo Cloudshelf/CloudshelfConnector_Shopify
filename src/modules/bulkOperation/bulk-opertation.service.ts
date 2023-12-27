@@ -16,6 +16,8 @@ import {
   CreateShopifyBulkOperationMutationVariables,
 } from "../../graphql/shopifyAdmin/generated/shopifyAdmin";
 import { ShopifyAdminClient } from "../shopifyClient/ShopifyAdminClient";
+import { Job } from "bullmq";
+import { jobLog } from "../../utils/jobLog";
 
 export class BulkOperationService {
   async findOneById(id: string): Promise<BulkOperation | null> {
@@ -29,6 +31,7 @@ export class BulkOperationService {
   }
 
   async createBulkOperation(
+    job: Job,
     domain: string,
     type: BulkOperationType,
     bulkOperationString: string,
@@ -38,9 +41,11 @@ export class BulkOperationService {
     const dataFromShopify = await this.createBulkOperationOnShopify(
       domain,
       bulkOperationString,
+      job,
     );
 
     if (!dataFromShopify) {
+      await jobLog(job, "Failed to create bulk operation on Shopify");
       throw new Error("Failed to create bulk operation on Shopify");
     }
 
@@ -53,6 +58,7 @@ export class BulkOperationService {
       explicitIds,
     );
 
+    await jobLog(job, "Created internal record: " + internalRecord.id);
     return internalRecord;
   }
 
@@ -112,6 +118,7 @@ export class BulkOperationService {
   async createBulkOperationOnShopify(
     domain: string,
     bulkOperationString: string,
+    job?: Job,
   ) {
     const client = new ShopifyAdminClient(domain);
     const apollo = await client.apollo();
@@ -128,6 +135,21 @@ export class BulkOperationService {
         queryString: bulkOperationString,
       },
     });
+
+    if (mutationResult.errors) {
+      console.error(
+        "Create Bulk Operation Mutation on Shopify returned errors",
+        mutationResult.errors,
+      );
+
+      if (job) {
+        await jobLog(
+          job,
+          "Create Bulk Operation Mutation on Shopify returned errors:" +
+            JSON.stringify(mutationResult.errors),
+        );
+      }
+    }
 
     return mutationResult.data?.bulkOperationRunQuery?.bulkOperation;
   }

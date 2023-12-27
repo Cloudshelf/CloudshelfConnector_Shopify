@@ -41,6 +41,7 @@ export const productGroupTriggerQueueProcessor = async (
   );
 
   const bulkOp = await Container.bulkOperationService.createBulkOperation(
+    job,
     job.data.domain,
     BulkOperationType.ProductGroupSync,
     bulkOperationString,
@@ -186,10 +187,12 @@ export const productGroupQueueProcessor = async (
     }
   }
 
-  console.log(
-    "Upserting product groups on cloudshelf",
-    JSON.stringify(productGroupInputs),
+  await jobLog(
+    job,
+    "Upserting product groups on cloudshelf: " +
+      JSON.stringify(productGroupInputs),
   );
+
   await Container.shopifyStoreService.updateProductGroups(
     job.data.domain,
     productGroupInputs,

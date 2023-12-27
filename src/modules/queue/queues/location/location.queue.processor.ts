@@ -9,6 +9,7 @@ import { createProductTriggerJob } from "../product/product.job.functions";
 export const locationQueueProcessor = async (job: Job): Promise<void> => {
   const shopifyLocationData = await Container.shopifyStoreService.getLocations(
     job.data.domain,
+    job,
   );
 
   const locationInputs: LocationInput[] = [];

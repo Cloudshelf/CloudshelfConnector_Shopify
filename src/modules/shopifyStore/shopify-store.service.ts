@@ -79,6 +79,7 @@ import { createThemeJob } from "../queue/queues/theme/theme.job.functions";
 import { createLocationJob } from "../queue/queues/location/location.job.functions";
 import { ApolloQueryResult } from "@apollo/client";
 import { createProductTriggerJob } from "../queue/queues/product/product.job.functions";
+import { Job } from "bullmq";
 
 export class ShopifyStoreService {
   async getAllStores() {
@@ -201,7 +202,7 @@ export class ShopifyStoreService {
     console.log(query.data);
   }
 
-  async getLocations(domain: string) {
+  async getLocations(domain: string, job?: Job) {
     const client = new ShopifyAdminClient(domain);
     const apollo = await client.apollo();
     if (!apollo) {
@@ -228,6 +229,20 @@ export class ShopifyStoreService {
           if (edge?.node) {
             locationEdges.push(edge.node);
           }
+        }
+      }
+
+      if (query.error) {
+        console.log("getLocationsFromShopify query Error: " + query.error);
+        if (job) {
+          await job.log("Query.Error: " + JSON.stringify(query.error));
+        }
+      }
+
+      if (query.errors) {
+        console.log("getLocationsFromShopify, query errors:" + query.errors);
+        if (job) {
+          await job.log("Query.Errors: " + JSON.stringify(query.errors));
         }
       }
 
@@ -298,7 +313,7 @@ export class ShopifyStoreService {
     }
   }
 
-  async getThemeFromShopify(domain: string) {
+  async getThemeFromShopify(domain: string, job?: Job) {
     const client = new ShopifyStorefrontClient(domain);
     const apollo = await client.apollo();
     if (!apollo) {
@@ -310,6 +325,20 @@ export class ShopifyStoreService {
     >({
       query: GetThemeInformationDocument,
     });
+
+    if (query.error) {
+      console.log("getThemeFromShopify, query Error: " + query.error);
+      if (job) {
+        await job.log("Query.Error: " + JSON.stringify(query.error));
+      }
+    }
+
+    if (query.errors) {
+      console.log("getThemeFromShopify, query errors:" + query.errors);
+      if (job) {
+        await job.log("Query.Errors: " + JSON.stringify(query.errors));
+      }
+    }
 
     return query.data.shop ?? null;
   }

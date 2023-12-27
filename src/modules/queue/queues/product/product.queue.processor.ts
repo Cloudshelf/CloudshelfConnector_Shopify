@@ -36,6 +36,7 @@ export const productTriggerQueueProcessor = async (
   );
 
   const bulkOp = await Container.bulkOperationService.createBulkOperation(
+    job,
     job.data.domain,
     BulkOperationType.ProductSync,
     bulkOperationString,
@@ -88,7 +89,8 @@ export const productQueueProcessor = async (
   ) {
     await jobLog(
       job,
-      "Task has no data url (full sync requires at least 1 line of data) OR bulkOp status is not completed. Job will be marked as completed as Shopify job failed.",
+      "Task has no data url (full sync requires at least 1 line of data) OR bulkOp status is not completed. Job will be marked as completed as Shopify job failed. Status: " +
+        bulkOpFromDatabase.status,
     );
     await handleComplete();
     return;

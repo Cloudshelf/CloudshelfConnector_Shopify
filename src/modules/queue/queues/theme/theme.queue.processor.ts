@@ -9,7 +9,10 @@ export const themeQueueProcessor = async (
   job: Job<ThemeJobData>,
 ): Promise<void> => {
   const shopifyThemeData =
-    await Container.shopifyStoreService.getThemeFromShopify(job.data.domain);
+    await Container.shopifyStoreService.getThemeFromShopify(
+      job.data.domain,
+      job,
+    );
   const themeInput: ThemeInput = {
     displayName: "Default Theme",
   };

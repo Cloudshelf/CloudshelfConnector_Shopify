@@ -147,6 +147,13 @@ export class QueueService {
     queueName: string,
     domain: string,
   ): Promise<Job<T>> {
+    console.log(
+      "findJobForDomainAndQueue",
+      queueName,
+      domain,
+      "existing queues:" + this.queues,
+    );
+
     const queue = this.queues[queueName];
 
     const allPendingJobs = await queue.getJobs([

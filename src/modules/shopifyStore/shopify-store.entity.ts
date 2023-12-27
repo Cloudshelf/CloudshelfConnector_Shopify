@@ -4,7 +4,9 @@ import { Entity, PrimaryKey, Property, types } from "@mikro-orm/core";
 export class ShopifyStore {
   constructor() {
     this.storefrontToken = null;
-    this.lastSyncedAt = null;
+    const now = new Date();
+    now.setHours(now.getHours() - 12);
+    this.lastSafetySync = now;
   }
 
   @PrimaryKey({ type: "uuid", defaultRaw: "uuid_generate_v4()" })
@@ -23,5 +25,5 @@ export class ShopifyStore {
   scopes!: string[];
 
   @Property({ type: types.datetime, nullable: true })
-  lastSyncedAt: Date | null;
+  lastSafetySync: Date | null;
 }

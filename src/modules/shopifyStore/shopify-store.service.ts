@@ -86,6 +86,15 @@ export class ShopifyStoreService {
     return em.find(ShopifyStore, {});
   }
 
+  async getAllStoresThatHaveNotSyncedInOneDay() {
+    const em = Container.entityManager.fork();
+    return em.find(ShopifyStore, {
+      lastSafetySync: {
+        $lt: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+      },
+    });
+  }
+
   async markUninstalled(domain: string) {
     //report uninstall to cloudshelf
     const timestamp = new Date().getTime().toString();
@@ -491,5 +500,15 @@ export class ShopifyStoreService {
     }
 
     delete Container.customTokens[shopDomain];
+  }
+
+  async markAsSafetySyncRequested(stores: ShopifyStore[]) {
+    const em = Container.entityManager.fork();
+
+    for (const store of stores) {
+      store.lastSafetySync = new Date();
+    }
+
+    await em.flush();
   }
 }

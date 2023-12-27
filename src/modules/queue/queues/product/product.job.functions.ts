@@ -30,15 +30,15 @@ export const createProductTriggerJob = async (
 
   if (productIds.length === 0) {
     //We want to do a full sync here, remove any existing jobs
-    if (existingJob) {
+    if (existingJob && existingJob.data.productIds.length > 0) {
       await existingJob.remove();
+    } else {
+      await Container.queueService.addJob(
+        QueueNames.PRODUCT_TRIGGER,
+        jobPayload,
+        { delay },
+      );
     }
-
-    await Container.queueService.addJob(
-      QueueNames.PRODUCT_TRIGGER,
-      jobPayload,
-      { delay },
-    );
   } else {
     if (existingJob) {
       const existingProductIds = existingJob?.data?.productIds ?? [];

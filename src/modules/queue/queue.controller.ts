@@ -5,6 +5,7 @@ import { Container } from "../../container";
 import { SafetySyncWebhookPayload } from "./dtos/safety-sync.webhook.payload";
 import { createProductGroupTriggerJob } from "./queues/productgroup/productgroup.job.functions";
 import { createProductTriggerJob } from "./queues/product/product.job.functions";
+import * as Sentry from "@sentry/node";
 
 @JsonController("/queue")
 export class QueueController {
@@ -23,12 +24,25 @@ export class QueueController {
       return 400;
     }
 
-    const stores = await Container.shopifyStoreService.getAllStores();
+    const stores =
+      await Container.shopifyStoreService.getAllStoresThatHaveNotSyncedInOneDay();
 
-    for (const store of stores) {
-      await createProductTriggerJob(store.domain, [], false, false);
+    if (stores.length > 0) {
+      Sentry.startTransaction({
+        op: "Noble:SafetySync",
+        name: "Queued Safety Syncs",
+        data: {
+          total: stores.length,
+          stores: stores.map((store) => store.domain),
+        },
+      }).finish();
+
+      for (const store of stores) {
+        await createProductTriggerJob(store.domain, [], false, false);
+      }
+
+      await Container.shopifyStoreService.markAsSafetySyncRequested(stores);
     }
-
     return 200;
   }
 }

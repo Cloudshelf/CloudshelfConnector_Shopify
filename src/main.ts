@@ -27,24 +27,41 @@ import * as Sentry from "@sentry/node";
 
 dotenv.config();
 
-Sentry.init({
-  dsn: process.env.SENTRY_DNS,
-  tracesSampleRate: 1.0,
-  environment: process.env.RELEASE_TYPE ?? "local",
-  release: process.env.PACKAGE_VERSION ?? "development_local",
-  ignoreErrors: [],
-});
-
 (async () => {
   console.log("Starting up....");
+
+  Error.stackTraceLimit = 100;
+  const app = express();
+
+  Sentry.init({
+    dsn: process.env.SENTRY_DNS,
+    tracesSampleRate: 1.0,
+    environment: process.env.RELEASE_TYPE ?? "local",
+    release: process.env.PACKAGE_VERSION ?? "development_local",
+    ignoreErrors: [],
+    integrations: [
+      // enable HTTP calls tracing
+      new Sentry.Integrations.Http({ tracing: true }),
+      // enable Express.js middleware tracing
+      new Sentry.Integrations.Express({
+        // to trace all requests to the default router
+        app,
+        // alternatively, you can specify the routes you want to trace:
+        // router: someRouter,
+      }),
+    ],
+  });
 
   Sentry.startTransaction({
     op: "Startup",
     name: "Application Startup",
   }).finish();
 
-  Error.stackTraceLimit = 100;
-  const app = express();
+  // RequestHandler creates a separate execution context, so that all
+  // transactions/spans/breadcrumbs are isolated across requests
+  app.use(Sentry.Handlers.requestHandler());
+  // TracingHandler creates a trace for every incoming request
+  app.use(Sentry.Handlers.tracingHandler());
 
   app.get("/FORCE", async (req, res, next) => {
     // await createThemeJob("cs-connector-store.myshopify.com", true);

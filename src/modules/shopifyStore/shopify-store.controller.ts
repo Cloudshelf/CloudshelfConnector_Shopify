@@ -41,7 +41,7 @@ export class ShopifyStoreController {
       op: "Webhook:Received",
       name: "Received store uninstalled webhook",
       data: {
-        body,
+        body: JSON.stringify(body),
         shopDomain,
       },
     }).finish();

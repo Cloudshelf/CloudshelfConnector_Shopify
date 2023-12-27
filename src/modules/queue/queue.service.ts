@@ -21,8 +21,8 @@ const COMPLETION_RATIO_CRITICAL = 0.25;
 export class QueueService {
   // Redis client
   private redis: RedisClientType;
-  private queues: { [key: string]: Queue };
-  private workers: { [key: string]: Worker };
+  private readonly queues: { [key: string]: Queue };
+  private readonly workers: { [key: string]: Worker };
 
   constructor() {
     this.redis = createClient({

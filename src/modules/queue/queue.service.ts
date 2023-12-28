@@ -97,7 +97,7 @@ export class QueueService {
             ex: inspect(ex),
           });
           if (failCount >= (job.opts.attempts || attempts)) {
-            throw new UnrecoverableError("Unrecoverable");
+            throw new UnrecoverableError("Unrecoverable: " + inspect(ex));
           }
 
           throw ex;

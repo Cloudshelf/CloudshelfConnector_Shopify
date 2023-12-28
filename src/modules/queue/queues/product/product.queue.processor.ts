@@ -62,6 +62,7 @@ export const productQueueProcessor = async (
       job.data.installStyleSync,
     );
 
+    await Container.shopifyStoreService.updateLastProductSync(job.data.domain);
     await jobLog(job, "productQueueProcessor Completed");
     console.log("productQueueProcessor Completed");
   };

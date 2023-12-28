@@ -7,6 +7,8 @@ export class ShopifyStore {
     const now = new Date();
     now.setHours(now.getHours() - 12);
     this.lastSafetySync = now;
+    this.lastProductSync = null;
+    this.lastProductGroupSync = null;
   }
 
   @PrimaryKey({ type: "uuid", defaultRaw: "uuid_generate_v4()" })
@@ -26,4 +28,10 @@ export class ShopifyStore {
 
   @Property({ type: types.datetime, nullable: true })
   lastSafetySync: Date | null;
+
+  @Property({ type: types.datetime, nullable: true })
+  lastProductSync: Date | null;
+
+  @Property({ type: types.datetime, nullable: true })
+  lastProductGroupSync: Date | null;
 }

@@ -549,4 +549,26 @@ export class ShopifyStoreService {
 
     await em.flush();
   }
+
+  async updateLastProductSync(domain: string) {
+    const em = Container.entityManager.fork();
+    const store = await this.findStoreByDomain(domain);
+
+    if (store) {
+      store.lastProductSync = new Date();
+      em.persist(store);
+      await em.flush();
+    }
+  }
+
+  async updateLastProductGroupSync(domain: string) {
+    const em = Container.entityManager.fork();
+    const store = await this.findStoreByDomain(domain);
+
+    if (store) {
+      store.lastProductGroupSync = new Date();
+      em.persist(store);
+      await em.flush();
+    }
+  }
 }

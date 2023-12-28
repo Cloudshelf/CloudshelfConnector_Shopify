@@ -60,6 +60,9 @@ export const productGroupQueueProcessor = async (
   job: Job<ProductGroupJobData>,
 ): Promise<void> => {
   const handleComplete = async () => {
+    await Container.shopifyStoreService.updateLastProductGroupSync(
+      job.data.domain,
+    );
     await jobLog(job, "productGroupQueueProcessor Completed");
     console.log("productGroupQueueProcessor Completed");
   };

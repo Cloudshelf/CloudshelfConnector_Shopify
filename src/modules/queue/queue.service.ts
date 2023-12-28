@@ -265,53 +265,95 @@ export class QueueService {
   }
 
   async checkSyncHealth() {
-    const warnings: string[] = [];
+    // const warnings: string[] = [];
     const severeAlerts: string[] = [];
     const stores = await Container.shopifyStoreService.getAllStores();
-    const groupQueue = this.queues[QueueNames.PRODUCT_GROUP_PROCESSOR];
-    const productQueue = this.queues[QueueNames.PRODUCT_PROCESSOR];
-    const completedProductSyncs = (await productQueue.getCompleted()).filter(
-      (job) =>
-        job.finishedOn &&
-        differenceInHours(new Date(), new Date(job.finishedOn)) <= 28,
-    );
-    const completedProductGroupSyncs = (await groupQueue.getCompleted()).filter(
-      (job) =>
-        job.finishedOn &&
-        differenceInHours(new Date(), new Date(job.finishedOn)) <= 28,
-    );
 
     for (const store of stores) {
-      const productSync = completedProductSyncs.find(
-        (job) => job.data.domain === store.domain,
-      );
-      const productGroupSync = completedProductGroupSyncs.find(
-        (job) => job.data.domain === store.domain,
-      );
+      const parts: string[] = [];
+      if (store.lastProductSync === null) {
+        parts.push("products");
+      }
 
-      if (!productSync && !productGroupSync) {
+      if (store.lastProductGroupSync === null) {
+        parts.push("product groups");
+      }
+
+      if (
+        store.lastProductSync !== null &&
+        differenceInHours(new Date(), new Date(store.lastProductSync)) <= 28
+      ) {
+        parts.push("products");
+      }
+
+      if (
+        store.lastProductGroupSync !== null &&
+        differenceInHours(new Date(), new Date(store.lastProductGroupSync)) <=
+          28
+      ) {
+        parts.push("product groups");
+      }
+
+      if (parts.length > 0) {
         severeAlerts.push(
-          `${store.domain} has not synced products OR product groups in the last 24 hours`,
-        );
-      } else if (!productSync) {
-        warnings.push(
-          `${store.domain} has not synced products in the last 24 hours`,
-        );
-      } else if (!productGroupSync) {
-        warnings.push(
-          `${store.domain} has not synced product groups in the last 24 hours`,
+          `${store.domain} has not synced ${parts.join(
+            " and ",
+          )} in the last 24 hours`,
         );
       }
     }
 
-    if (warnings.length > 0) {
-      await Container.slackService.sendSyncHealthStatus(warnings, "warn");
-    }
     if (severeAlerts.length > 0) {
       await Container.slackService.sendSyncHealthStatus(
         severeAlerts,
         "critical",
       );
     }
+
+    // const groupQueue = this.queues[QueueNames.PRODUCT_GROUP_PROCESSOR];
+    // const productQueue = this.queues[QueueNames.PRODUCT_PROCESSOR];
+    // const completedProductSyncs = (await productQueue.getCompleted()).filter(
+    //   (job) =>
+    //     job.finishedOn &&
+    //     differenceInHours(new Date(), new Date(job.finishedOn)) <= 28,
+    // );
+    // const completedProductGroupSyncs = (await groupQueue.getCompleted()).filter(
+    //   (job) =>
+    //     job.finishedOn &&
+    //     differenceInHours(new Date(), new Date(job.finishedOn)) <= 28,
+    // );
+    //
+    // for (const store of stores) {
+    //   const productSync = completedProductSyncs.find(
+    //     (job) => job.data.domain === store.domain,
+    //   );
+    //   const productGroupSync = completedProductGroupSyncs.find(
+    //     (job) => job.data.domain === store.domain,
+    //   );
+    //
+    //   if (!productSync && !productGroupSync) {
+    //     severeAlerts.push(
+    //       `${store.domain} has not synced products OR product groups in the last 24 hours`,
+    //     );
+    //   } else if (!productSync) {
+    //     warnings.push(
+    //       `${store.domain} has not synced products in the last 24 hours`,
+    //     );
+    //   } else if (!productGroupSync) {
+    //     warnings.push(
+    //       `${store.domain} has not synced product groups in the last 24 hours`,
+    //     );
+    //   }
+    // }
+
+    // if (warnings.length > 0) {
+    //   await Container.slackService.sendSyncHealthStatus(warnings, "warn");
+    // }
+    // if (severeAlerts.length > 0) {
+    //   await Container.slackService.sendSyncHealthStatus(
+    //     severeAlerts,
+    //     "critical",
+    //   );
+    // }
   }
 }

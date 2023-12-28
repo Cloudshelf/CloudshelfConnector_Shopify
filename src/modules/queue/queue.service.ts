@@ -90,7 +90,9 @@ export class QueueService {
           );
           const failCount = job.data.failCount || 0;
           await job.updateData({ ...job.data, failCount: failCount + 1 });
-          await job.retry();
+          if (failCount < attempts) {
+            await job.retry();
+          }
           if (job.data.lockId) {
             console.log(
               `Releasing lock for job '${job.name}:${job.id}', lockId: ${job.data.lockId}`,

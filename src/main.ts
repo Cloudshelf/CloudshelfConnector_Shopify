@@ -49,6 +49,13 @@ dotenv.config();
   app.use(Sentry.Handlers.requestHandler());
   app.use(Sentry.Handlers.tracingHandler());
 
+  const port = process.env.PORT || 3123;
+  await Container.initialise();
+  if (!Container.isInitialised) {
+    throw new Error("Container was not configured");
+  }
+  await registerQueues();
+
   RegisterUtilRoutes(app);
 
   app.use(bodyParser.json());
@@ -65,13 +72,6 @@ dotenv.config();
     ],
     routePrefix: "/app",
   });
-
-  const port = process.env.PORT || 3123;
-  await Container.initialise();
-  if (!Container.isInitialised) {
-    throw new Error("Container was not configured");
-  }
-  await registerQueues();
 
   RegisterShopifyRoutes(app);
 

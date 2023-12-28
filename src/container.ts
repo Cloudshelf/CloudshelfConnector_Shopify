@@ -10,39 +10,44 @@ import { SlackService } from "./modules/slack/slack.service";
 import { WebhookService } from "./modules/webhook/webhook.service";
 
 export class Container {
-  private static _initialised = false;
-  private static _databaseService: DatabaseService;
-  private static _shopifyService: ShopifyService;
-  private static _shopifyStoreService: ShopifyStoreService;
-  private static _authService: AuthService;
-  private static _queueService: QueueService;
-  private static _bulkOperationService: BulkOperationService;
-  private static _slackService: SlackService;
-  private static _webhookService: WebhookService;
-  static customTokens: { [domain: string]: string } = {};
+  // private static _initialised = false;
+  // private static _databaseService: DatabaseService;
+  // private static _shopifyService: ShopifyService;
+  // private static _shopifyStoreService: ShopifyStoreService;
+  // private static _authService: AuthService;
+  // private static _queueService: QueueService;
+  // private static _bulkOperationService: BulkOperationService;
+  // private static _slackService: SlackService;
+  // private static _webhookService: WebhookService;
+  // static customTokens: { [domain: string]: string } = {};
 
   static async initialise() {
     console.debug("Initialising container...");
-    this._databaseService = new DatabaseService();
-    await this._databaseService.initialise();
-    this._shopifyService = new ShopifyService();
-    this._shopifyStoreService = new ShopifyStoreService();
-    this._authService = new AuthService();
-    this._queueService = new QueueService();
-    this._bulkOperationService = new BulkOperationService();
-    this._slackService = new SlackService();
-    this._webhookService = new WebhookService();
+    (global as any).customTokens = {};
+    (global as any)._databaseService = new DatabaseService();
+    await (global as any)._databaseService.initialise();
+    (global as any)._shopifyService = new ShopifyService();
+    (global as any)._shopifyStoreService = new ShopifyStoreService();
+    (global as any)._authService = new AuthService();
+    (global as any)._queueService = new QueueService();
+    (global as any)._bulkOperationService = new BulkOperationService();
+    (global as any)._slackService = new SlackService();
+    (global as any)._webhookService = new WebhookService();
 
-    this._initialised = true;
+    (global as any)._initialised = true;
     console.debug("Container initialised");
   }
 
   static get isInitialised() {
-    return this._initialised;
+    return (global as any)._initialised;
+  }
+
+  static get customTokens(): { [domain: string]: string } {
+    return (global as any).customTokens;
   }
 
   private static throwIfNotInitialised() {
-    if (!this._initialised) {
+    if (!(global as any)._initialised) {
       throw new Error("Container not initialised");
     }
   }
@@ -50,7 +55,7 @@ export class Container {
   static get orm(): PostgreSqlMikroORM {
     this.throwIfNotInitialised();
 
-    return this._databaseService.getOrm();
+    return (global as any)._databaseService.getOrm();
   }
 
   static get entityManager() {
@@ -62,42 +67,42 @@ export class Container {
   static get authService(): AuthService {
     this.throwIfNotInitialised();
 
-    return this._authService;
+    return (global as any)._authService;
   }
 
   static get shopifyService(): ShopifyService {
     this.throwIfNotInitialised();
 
-    return this._shopifyService;
+    return (global as any)._shopifyService;
   }
 
   static get shopifyStoreService(): ShopifyStoreService {
     this.throwIfNotInitialised();
 
-    return this._shopifyStoreService;
+    return (global as any)._shopifyStoreService;
   }
 
   static get queueService(): QueueService {
     this.throwIfNotInitialised();
 
-    return this._queueService;
+    return (global as any)._queueService;
   }
 
   static get bulkOperationService(): BulkOperationService {
     this.throwIfNotInitialised();
 
-    return this._bulkOperationService;
+    return (global as any)._bulkOperationService;
   }
 
   static get slackService(): SlackService {
     this.throwIfNotInitialised();
 
-    return this._slackService;
+    return (global as any)._slackService;
   }
 
   static get webhookService(): WebhookService {
     this.throwIfNotInitialised();
 
-    return this._webhookService;
+    return (global as any)._webhookService;
   }
 }

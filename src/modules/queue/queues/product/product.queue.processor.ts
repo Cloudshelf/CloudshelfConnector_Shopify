@@ -22,6 +22,7 @@ import {
 } from "../../../../graphql/cloudshelf/generated/cloudshelf";
 import { gidConverter } from "../../../../utils/gidConverter";
 const finished = promisify(stream.finished);
+import * as _ from "lodash";
 
 export const productTriggerQueueProcessor = async (
   job: Job<ProductTriggerJobData>,
@@ -262,49 +263,37 @@ export const productQueueProcessor = async (
       );
     }
 
-    console.log("Upserting products to cloudshelf for current chunk");
-
-    //split into chunks of 250
-    const chunkedProductInputs = productInputs.reduce(
-      (resultArray: ProductInput[][], item, index) => {
-        const chunkIndex = Math.floor(index / 250);
-
-        if (!resultArray[chunkIndex]) {
-          resultArray[chunkIndex] = []; // start a new chunk
-        }
-
-        resultArray[chunkIndex].push(item);
-
-        return resultArray;
-      },
-      [],
+    await jobLog(
+      job,
+      "Upserting products to cloudshelf for current file chunk, in chunks of 250",
     );
 
+    //split into chunks of 250
+    const chunkedProductInputs = _.chunk(productInputs, 250);
+
     for (const chunk of chunkedProductInputs) {
+      await jobLog(
+        job,
+        `Upserting ${chunk.length} products to cloudshelf for current file chunk`,
+      );
       await Container.shopifyStoreService.upsertProductsToCloudshelf(
         job.data.domain,
         chunk,
       );
     }
 
-    console.log("Upserting variants to cloudshelf for current chunk");
-
-    const chunkedVariantInputs = variantInputs.reduce(
-      (resultArray: UpsertVariantsInput[][], item, index) => {
-        const chunkIndex = Math.floor(index / 50);
-
-        if (!resultArray[chunkIndex]) {
-          resultArray[chunkIndex] = []; // start a new chunk
-        }
-
-        resultArray[chunkIndex].push(item);
-
-        return resultArray;
-      },
-      [],
+    await jobLog(
+      job,
+      "Upserting variants to cloudshelf for current file chunk, in chunks of 250",
     );
 
+    const chunkedVariantInputs = _.chunk(variantInputs, 250);
+
     for (const variantInput of chunkedVariantInputs) {
+      await jobLog(
+        job,
+        `Upserting ${variantInput.length} variants to cloudshelf for current file chunk`,
+      );
       await Container.shopifyStoreService.upsertProductVariantsToCloudshelf(
         job.data.domain,
         variantInput,

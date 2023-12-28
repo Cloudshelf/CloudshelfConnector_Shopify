@@ -94,10 +94,14 @@ export class QueueService {
           await job.updateData({
             ...job.data,
             failCount: failCount + 1,
-            ex: inspect(ex),
           });
-          if (failCount >= (job.opts.attempts || attempts)) {
-            throw new UnrecoverableError("Unrecoverable: " + inspect(ex));
+          const maxFailAttempts = job.opts.attempts || attempts;
+          if (failCount >= maxFailAttempts) {
+            throw new UnrecoverableError(
+              `Unable to process job. Failed ${failCount} times, out of a maximum of ${maxFailAttempts} times. Latest error: ${inspect(
+                ex,
+              )}`,
+            );
           }
 
           throw ex;

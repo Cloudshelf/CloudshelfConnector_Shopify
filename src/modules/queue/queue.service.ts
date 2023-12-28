@@ -78,34 +78,36 @@ export class QueueService {
           res = await processor(job);
         } catch (ex) {
           if (ex instanceof DelayedError) {
-            /*console.log(
-              `Releasing lock for job '${job.name}:${job.id}', lockId: ${job.data.lockId}`,
-            );*/
-            await this.releaseLock(job.data.lockId);
+            console.log("Job was delayed");
+            // console.log(
+            //   `Releasing lock for job '${job.name}:${job.id}', lockId: ${job.data.lockId}`,
+            // );
+            // await this.releaseLock(job.data.lockId);
             throw ex;
           }
           console.log(
             "Error processing job",
             JSON.stringify(ex, Object.getOwnPropertyNames(ex), 2),
           );
-          const failCount = job.data.failCount || 0;
-          await job.updateData({ ...job.data, failCount: failCount + 1 });
-          if (failCount < attempts) {
-            await job.retry();
-          }
+          throw ex;
+          // const failCount = job.data.failCount || 0;
+          // await job.updateData({ ...job.data, failCount: failCount + 1 });
+          // if (failCount < attempts) {
+          //   await job.retry();
+          // }
+          // if (job.data.lockId) {
+          //   console.log(
+          //     `Releasing lock for job '${job.name}:${job.id}', lockId: ${job.data.lockId}`,
+          //   );
+          //   await this.releaseLock(job.data.lockId);
+          // }
+        } finally {
           if (job.data.lockId) {
             console.log(
               `Releasing lock for job '${job.name}:${job.id}', lockId: ${job.data.lockId}`,
             );
             await this.releaseLock(job.data.lockId);
           }
-        }
-
-        if (job.data.lockId) {
-          console.log(
-            `Releasing lock for job '${job.name}:${job.id}', lockId: ${job.data.lockId}`,
-          );
-          await this.releaseLock(job.data.lockId);
         }
 
         return res;
@@ -279,19 +281,26 @@ export class QueueService {
         parts.push("product groups");
       }
 
-      if (
-        store.lastProductSync !== null &&
-        differenceInHours(new Date(), new Date(store.lastProductSync)) <= 28
-      ) {
-        parts.push("products");
+      if (store.lastProductSync !== null) {
+        const diffInHours = differenceInHours(
+          new Date(),
+          new Date(store.lastProductSync),
+        );
+
+        if (diffInHours >= 28) {
+          parts.push("products");
+        }
       }
 
-      if (
-        store.lastProductGroupSync !== null &&
-        differenceInHours(new Date(), new Date(store.lastProductGroupSync)) <=
-          28
-      ) {
-        parts.push("product groups");
+      if (store.lastProductGroupSync !== null) {
+        const diffInHours = differenceInHours(
+          new Date(),
+          new Date(store.lastProductGroupSync),
+        );
+
+        if (diffInHours >= 28) {
+          parts.push("product groups");
+        }
       }
 
       if (parts.length > 0) {

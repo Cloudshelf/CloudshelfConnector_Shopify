@@ -28,6 +28,10 @@ export function RegisterUtilRoutes(app: Express) {
     throw new Error("Test crash");
   });
 
+  app.get("/util/test1", async (req, res, next) => {
+    await Container.queueService.checkSyncHealth();
+  });
+
   app.get("/util/testBulk", async (req, res, next) => {
     // const withPublicationStatus = true;
     //

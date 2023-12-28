@@ -36,12 +36,12 @@ export const productTriggerQueueProcessor = async (
   );
 
   const bulkOp = await Container.bulkOperationService.createBulkOperation(
-    job,
     job.data.domain,
     BulkOperationType.ProductSync,
     bulkOperationString,
     job.data.installStyleSync ?? false,
     job.data.productIds,
+    job,
   );
 
   await jobLog(

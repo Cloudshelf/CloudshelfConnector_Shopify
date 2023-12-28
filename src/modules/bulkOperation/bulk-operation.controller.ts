@@ -1,5 +1,6 @@
 import {
   Body,
+  Get,
   HttpCode,
   JsonController,
   Post,
@@ -14,6 +15,7 @@ import { createProductJob } from "../queue/queues/product/product.job.functions"
 import { createProductGroupJob } from "../queue/queues/productgroup/productgroup.job.functions";
 import { Request } from "express";
 import * as Sentry from "@sentry/node";
+import { QueueNames } from "../queue/queue.names.const";
 
 @JsonController("/webhooks/bulkoperation")
 @UseBefore(WebhookAuthenticationMiddleware)
@@ -26,8 +28,8 @@ export class BulkOperationController {
     @Req() req: Request,
     @Body() body: BulkOperationWebhookPayload,
   ) {
-    const shopDomain = req.get("x-shopify-shop-domain"); //req.headers["x-shopify-shop-domain"] ?? undefined;
-    const topic = req.get("x-shopify-topic"); //req.headers["x-shopify-topic"] ?? undefined;
+    const shopDomain = req.get("x-shopify-shop-domain");
+    const topic = req.get("x-shopify-topic");
 
     Sentry.startTransaction({
       op: "Webhook:Received",
@@ -93,29 +95,12 @@ export class BulkOperationController {
     await Container.bulkOperationService.saveOne(bulkOp);
     console.log("Successfully updated bulkOp record");
 
-    //create any required background jobs
-    if (bulkOp.type === BulkOperationType.ProductSync) {
-      console.log(
-        "Creating product sync background task from bulkOpComplete webhook",
+    if (bulkOp.status.toLowerCase() === "completed") {
+      await Container.bulkOperationService.handleBulkOpChange(
+        bulkOp,
+        bulkOp.domain,
+        "webhook",
       );
-      await createProductJob(
-        shopDomain,
-        bulkOp.id,
-        bulkOp.explicitIds ?? [],
-        bulkOp.installStyleSync,
-      );
-    } else if (bulkOp.type === BulkOperationType.ProductGroupSync) {
-      console.log(
-        "Creating product group sync background task from bulkOpComplete webhook",
-      );
-      await createProductGroupJob(
-        shopDomain,
-        bulkOp.id,
-        bulkOp.explicitIds ?? [],
-        bulkOp.installStyleSync,
-      );
-    } else {
-      console.log("bulkOpComplete webhook referenced unknown bulkOp type");
     }
 
     return 200;

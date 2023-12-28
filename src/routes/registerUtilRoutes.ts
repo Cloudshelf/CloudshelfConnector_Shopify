@@ -1,12 +1,49 @@
 import { Express } from "express";
 import { createThemeJob } from "../modules/queue/queues/theme/theme.job.functions";
 import { Container } from "../container";
-
+import { buildProductsQueryString } from "../graphql/shopifyAdmin/bulk_operations.util";
+import { BulkOperationType } from "../modules/bulkOperation/bulk-operation.type";
+import { createProductGroupTriggerJob } from "../modules/queue/queues/productgroup/productgroup.job.functions";
+import { jobLog } from "../utils/jobLog";
+import { v4 } from "uuid";
+import { createWriteStream, promises as fsPromises } from "fs";
+import axios from "axios";
+import {
+  KeyValuePairInput,
+  MetadataInput,
+  MetaimageInput,
+  ProductInput,
+  UpsertVariantsInput,
+  ProductVariantInput,
+} from "../graphql/cloudshelf/generated/cloudshelf";
+import { readJsonlChunked } from "../utils/readJsonlChunked";
+import { gidConverter } from "../utils/gidConverter";
+import { promisify } from "util";
+import stream from "stream";
+const finished = promisify(stream.finished);
 export function RegisterUtilRoutes(app: Express) {
   console.info("Registering util routes...");
 
   app.get("/crash", (req, res) => {
     throw new Error("Test crash");
+  });
+
+  app.get("/util/testBulk", async (req, res, next) => {
+    // const withPublicationStatus = true;
+    //
+    // const bulkOperationString = buildProductsQueryString(
+    //   [],
+    //   withPublicationStatus,
+    // );
+    //
+    // const bulkOp = await Container.bulkOperationService.createBulkOperation(
+    //   "mamoth-25k.myshopify.com",
+    //   BulkOperationType.ProductSync,
+    //   bulkOperationString,
+    //   false,
+    //   [],
+    //   undefined,
+    // );
   });
 
   // app.get("/FORCE", async (req, res, next) => {

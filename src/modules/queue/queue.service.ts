@@ -5,6 +5,7 @@ import {
   JobsOptions,
   Processor,
   Queue,
+  UnrecoverableError,
   Worker,
 } from "bullmq";
 import { QueueNames } from "./queue.names.const";
@@ -89,6 +90,11 @@ export class QueueService {
             "Error processing job",
             JSON.stringify(ex, Object.getOwnPropertyNames(ex), 2),
           );
+          const attemptsMade = job.attemptsMade || 0;
+          if (attemptsMade >= (job.opts.attempts || attempts)) {
+            throw new UnrecoverableError("Unrecoverable");
+          }
+
           throw ex;
           // const failCount = job.data.failCount || 0;
           // await job.updateData({ ...job.data, failCount: failCount + 1 });

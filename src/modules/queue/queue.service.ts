@@ -135,6 +135,7 @@ export class QueueService {
           username: process.env.REDIS_USERNAME!,
           password: process.env.REDIS_PASSWORD!,
         },
+        prefix: "noble",
         concurrency,
         removeOnComplete: { count: 100 }, // Keep the last 100 completed jobs
       },

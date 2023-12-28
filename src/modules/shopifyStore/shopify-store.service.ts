@@ -80,6 +80,7 @@ import { createLocationJob } from "../queue/queues/location/location.job.functio
 import { ApolloQueryResult } from "@apollo/client";
 import { createProductTriggerJob } from "../queue/queues/product/product.job.functions";
 import { Job } from "bullmq";
+import { inspect } from "util";
 
 export class ShopifyStoreService {
   async getAllStores() {
@@ -410,7 +411,11 @@ export class ShopifyStoreService {
     //TODO: Handle errors
   }
 
-  async updateProductGroups(domain: string, input: ProductGroupInput[]) {
+  async updateProductGroups(
+    domain: string,
+    input: ProductGroupInput[],
+    log?: (logmessage: string) => Promise<void>,
+  ) {
     const client = CloudshelfClientFactory.getClient(domain);
 
     const mutationTuple = await client.mutate<
@@ -423,6 +428,14 @@ export class ShopifyStoreService {
       },
     });
 
+    if (mutationTuple.errors) {
+      console.log("Failed to update product groups", mutationTuple.errors);
+      if (log) {
+        await log(
+          "Failed to update product groups: " + inspect(mutationTuple.errors),
+        );
+      }
+    }
     //TODO: Handle errors
   }
 
@@ -430,6 +443,7 @@ export class ShopifyStoreService {
     domain: string,
     productGroupId: string,
     productIds: string[],
+    log?: (logmessage: string) => Promise<void>,
   ) {
     const client = CloudshelfClientFactory.getClient(domain);
 
@@ -444,6 +458,15 @@ export class ShopifyStoreService {
       },
     });
 
+    if (mutationTuple.errors) {
+      console.log("Failed to update products in group", mutationTuple.errors);
+      if (log) {
+        await log(
+          "Failed to update products in group: " +
+            inspect(mutationTuple.errors),
+        );
+      }
+    }
     //TODO: Handle errors
   }
 
@@ -511,7 +534,11 @@ export class ShopifyStoreService {
     return queryTuple.data.organisationInstallComplete ?? false;
   }
 
-  async upsertCloudshelf(domain: string, input: CloudshelfInput) {
+  async upsertCloudshelf(
+    domain: string,
+    input: CloudshelfInput,
+    log?: (logmessage: string) => Promise<void>,
+  ) {
     const client = CloudshelfClientFactory.getClient(domain);
 
     const mutationTuple = await client.mutate<
@@ -523,6 +550,15 @@ export class ShopifyStoreService {
         input: [input],
       },
     });
+
+    if (mutationTuple.errors) {
+      console.log("Failed to upsert Cloudshelf", mutationTuple.errors);
+      if (log) {
+        await log(
+          "Failed to upsert cloudshelf: " + inspect(mutationTuple.errors),
+        );
+      }
+    }
 
     //TODO: Handle errors
   }

@@ -18,7 +18,7 @@ import { v4 } from "uuid";
 import { createWriteStream } from "fs";
 import axios from "axios";
 import * as stream from "stream";
-import { promisify } from "util";
+import { inspect, promisify } from "util";
 import { readJsonl } from "../../../../utils/readJsonlChunked";
 import { gidConverter } from "../../../../utils/gidConverter";
 import {
@@ -199,20 +199,30 @@ export const productGroupQueueProcessor = async (
   await Container.shopifyStoreService.updateProductGroups(
     job.data.domain,
     productGroupInputs,
+    async (logmessage: string) => await jobLog(job, logmessage),
   );
 
   console.log("Updating products in groups on cloudshelf");
+  await jobLog(job, "Updating products in groups on cloudshelf");
   for (const [productGroupId, productIds] of Object.entries(productsInGroups)) {
+    await jobLog(
+      job,
+      `Product Group: ${productGroupId}, products: ${inspect(productIds)}`,
+    );
     await Container.shopifyStoreService.updateProductsInProductGroup(
       job.data.domain,
       productGroupId,
       productIds,
+      async (logmessage: string) => await jobLog(job, logmessage),
     );
   }
 
+  await jobLog(job, "All products in groups finished");
   //Now, we need to handle creating the first cloudshelf if needed
   const installAlreadyCompleted =
     await Container.shopifyStoreService.isStoreFullyInstalled(job.data.domain);
+  await jobLog(job, "Is fully installed: " + installAlreadyCompleted);
+
   if (!installAlreadyCompleted) {
     const firstCloudshelf: CloudshelfInput = {
       id: `gid://external/ConnectorGeneratedCloudshelf/${job.data.domain}`,
@@ -220,9 +230,12 @@ export const productGroupQueueProcessor = async (
       displayName: "First Cloudshelf",
       homeFrameCallToAction: "Touch to discover and buy",
     };
+    await jobLog(job, "Creating first cloudshelf: " + inspect(firstCloudshelf));
+
     await Container.shopifyStoreService.upsertCloudshelf(
       job.data.domain,
       firstCloudshelf,
+      async (logmessage: string) => await jobLog(job, logmessage),
     );
   }
 

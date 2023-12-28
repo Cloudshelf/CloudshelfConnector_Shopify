@@ -18,36 +18,43 @@ export const registerQueues = async () => {
   await Container.queueService.registerQueue(
     QueueNames.TEST,
     testQueueProcessor,
+    2,
   );
 
   await Container.queueService.registerQueue(
     QueueNames.THEME,
     themeQueueProcessor,
+    2,
   );
 
   await Container.queueService.registerQueue(
     QueueNames.LOCATION,
     locationQueueProcessor,
+    2,
   );
 
   await Container.queueService.registerQueue(
     QueueNames.PRODUCT_TRIGGER,
     productTriggerQueueProcessor,
+    3,
   );
 
   await Container.queueService.registerQueue(
     QueueNames.PRODUCT_PROCESSOR,
     productQueueProcessor,
+    2,
   );
 
   await Container.queueService.registerQueue(
     QueueNames.PRODUCT_GROUP_TRIGGER,
     productGroupTriggerQueueProcessor,
+    3,
   );
 
   await Container.queueService.registerQueue(
     QueueNames.PRODUCT_GROUP_PROCESSOR,
     productGroupQueueProcessor,
+    2,
   );
 
   console.debug("Queues registration complete");

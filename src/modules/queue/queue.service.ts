@@ -49,6 +49,7 @@ export class QueueService {
         username: process.env.REDIS_USERNAME!,
         password: process.env.REDIS_PASSWORD!,
       },
+      prefix: "noble",
       defaultJobOptions: {
         // TODO: Tweak these values if necessary
         attempts,

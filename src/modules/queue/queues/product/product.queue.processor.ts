@@ -23,6 +23,7 @@ import {
 import { gidConverter } from "../../../../utils/gidConverter";
 const finished = promisify(stream.finished);
 import * as _ from "lodash";
+import { chunkBy } from "../../../../utils/chunkBy";
 
 export const productTriggerQueueProcessor = async (
   job: Job<ProductTriggerJobData>,
@@ -288,7 +289,6 @@ export const productQueueProcessor = async (
     );
 
     const chunkedVariantInputs = _.chunk(variantInputs, 250);
-
     for (const variantInput of chunkedVariantInputs) {
       await jobLog(
         job,

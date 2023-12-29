@@ -155,11 +155,11 @@ export class ShopifyStoreController {
       console.error("No shop domain in header");
       return 400;
     }
-
-    const productId = gidConverter(
-      body.admin_graphql_api_id,
-      "ShopifyProduct",
-    )!;
+    const productId = body.admin_graphql_api_id;
+    // const productId = gidConverter(
+    //   body.admin_graphql_api_id,
+    //   "ShopifyProduct",
+    // )!;
     await createProductTriggerJob(shopDomain, [productId], false, true);
 
     return 200;
@@ -216,11 +216,11 @@ export class ShopifyStoreController {
       console.error("No shop domain in header");
       return 400;
     }
-
-    const productId = gidConverter(
-      body.admin_graphql_api_id,
-      "ShopifyCollection",
-    )!;
+    const productId = body.admin_graphql_api_id;
+    // const productId = gidConverter(
+    //   body.admin_graphql_api_id,
+    //   "ShopifyCollection",
+    // )!;
     await createProductGroupTriggerJob(shopDomain, [productId], false, true);
 
     return 200;

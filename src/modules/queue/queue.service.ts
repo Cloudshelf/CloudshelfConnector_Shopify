@@ -49,7 +49,7 @@ export class QueueService {
         username: process.env.REDIS_USERNAME!,
         password: process.env.REDIS_PASSWORD!,
       },
-      prefix: "noble",
+      prefix: process.env.REDIS_PREFIX!,
       defaultJobOptions: {
         // TODO: Tweak these values if necessary
         attempts,
@@ -135,7 +135,7 @@ export class QueueService {
           username: process.env.REDIS_USERNAME!,
           password: process.env.REDIS_PASSWORD!,
         },
-        prefix: "noble",
+        prefix: process.env.REDIS_PREFIX!,
         concurrency,
         removeOnComplete: { count: 100 }, // Keep the last 100 completed jobs
       },
@@ -149,15 +149,19 @@ export class QueueService {
   }
 
   async acquireLock(id: string) {
-    const lockAcquired = await this.redis.set(`lock:${id}`, "1", {
-      EX: 1800,
-      NX: true,
-    });
+    const lockAcquired = await this.redis.set(
+      `${process.env.REDIS_PREFIX!}:lock:${id}`,
+      "1",
+      {
+        EX: 1800,
+        NX: true,
+      },
+    );
     return !!lockAcquired;
   }
 
   async releaseLock(id: string) {
-    await this.redis.del(`lock:${id}`);
+    await this.redis.del(`${process.env.REDIS_PREFIX!}:lock:${id}`);
   }
 
   async addJob<T>(queueName: string, data?: T, options?: JobsOptions) {

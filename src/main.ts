@@ -14,6 +14,7 @@ import { WebhookController } from "./modules/webhook/webhook.controller";
 import * as Sentry from "@sentry/node";
 import { RegisterUtilRoutes } from "./routes/registerUtilRoutes";
 import { RegisterShopifyRoutes } from "./routes/registerShopifyRoutes";
+import { ProfilingIntegration } from "@sentry/profiling-node";
 
 dotenv.config();
 
@@ -26,11 +27,13 @@ dotenv.config();
   Sentry.init({
     dsn: process.env.SENTRY_DNS,
     tracesSampleRate: 1.0,
+    profilesSampleRate: 1.0,
     environment: process.env.RELEASE_TYPE ?? "local",
     release: process.env.PACKAGE_VERSION ?? "development_local",
     ignoreErrors: [],
     ignoreTransactions: ["/_next/", "/img/", /^\/$/, /^\/\*$/],
     integrations: [
+      new ProfilingIntegration(),
       // enable HTTP calls tracing
       new Sentry.Integrations.Http({ tracing: true }),
       // enable Express.js middleware tracing

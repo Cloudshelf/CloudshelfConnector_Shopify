@@ -83,7 +83,7 @@ import { Job } from "bullmq";
 import { inspect } from "util";
 
 export class ShopifyStoreService {
-  async getAllStores(from: number, limit: number) {
+  async getAllStores(from?: number, limit?: number) {
     const em = Container.entityManager.fork();
     return em.find(ShopifyStore, {}, { limit: limit, offset: from });
   }

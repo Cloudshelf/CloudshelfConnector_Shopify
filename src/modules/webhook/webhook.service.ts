@@ -209,14 +209,20 @@ export class WebhookService {
     }
   }
 
-  async registerAllWebhooksForAllStores(): Promise<{
+  async registerAllWebhooksForAllStores(
+    from: number,
+    limit: number,
+  ): Promise<{
     success: string[];
     failed: string[];
   }> {
     const failed: string[] = [];
     const success: string[] = [];
 
-    const stores = await Container.shopifyStoreService.getAllStores();
+    const stores = await Container.shopifyStoreService.getAllStores(
+      from,
+      limit,
+    );
     for (const store of stores) {
       try {
         await this.registerAllWebhooksForStore(store.domain);
@@ -229,13 +235,19 @@ export class WebhookService {
     return { success, failed };
   }
 
-  async deleteAllWebhooksForAllStores(): Promise<{
+  async deleteAllWebhooksForAllStores(
+    from: number,
+    limit: number,
+  ): Promise<{
     success: string[];
     failed: string[];
   }> {
     const failed: string[] = [];
     const success: string[] = [];
-    const stores = await Container.shopifyStoreService.getAllStores();
+    const stores = await Container.shopifyStoreService.getAllStores(
+      from,
+      limit,
+    );
     for (const store of stores) {
       try {
         await this.deleteAllWebhooksForStore(store.domain);

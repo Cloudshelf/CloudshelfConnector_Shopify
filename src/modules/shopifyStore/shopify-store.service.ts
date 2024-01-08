@@ -83,9 +83,9 @@ import { Job } from "bullmq";
 import { inspect } from "util";
 
 export class ShopifyStoreService {
-  async getAllStores() {
+  async getAllStores(from: number, limit: number) {
     const em = Container.entityManager.fork();
-    return em.find(ShopifyStore, {});
+    return em.find(ShopifyStore, {}, { limit: limit, offset: from });
   }
 
   async getAllStoresThatHaveNotSyncedInOneDay() {

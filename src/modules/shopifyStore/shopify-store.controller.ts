@@ -37,6 +37,10 @@ export class ShopifyStoreController {
 
     const shopDomain = req.get("x-shopify-shop-domain");
 
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", shopDomain);
+    });
+
     Sentry.startTransaction({
       op: "Webhook:Received",
       name: "Received store uninstalled webhook",
@@ -45,6 +49,10 @@ export class ShopifyStoreController {
         shopDomain,
       },
     }).finish();
+
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", undefined);
+    });
 
     if (!shopDomain) {
       console.error("No shop domain in header");
@@ -67,6 +75,10 @@ export class ShopifyStoreController {
     console.log("Received store customers/data_request webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
 
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", shopDomain);
+    });
+
     Sentry.startTransaction({
       op: "Webhook:Received",
       name: "Received store data request webhook",
@@ -75,6 +87,10 @@ export class ShopifyStoreController {
         shopDomain,
       },
     }).finish();
+
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", undefined);
+    });
 
     if (!shopDomain) {
       console.error("No shop domain in header");
@@ -112,6 +128,10 @@ export class ShopifyStoreController {
     console.log("Received shop/redact webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
 
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", shopDomain);
+    });
+
     Sentry.startTransaction({
       op: "Webhook:Received",
       name: "Received store redact webhook",
@@ -120,6 +140,10 @@ export class ShopifyStoreController {
         shopDomain,
       },
     }).finish();
+
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", undefined);
+    });
 
     if (!shopDomain) {
       console.error("No shop domain in header");
@@ -142,6 +166,10 @@ export class ShopifyStoreController {
     console.log("Received product update webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
 
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", shopDomain);
+    });
+
     Sentry.startTransaction({
       op: "Webhook:Received",
       name: "Received product update webhook",
@@ -150,6 +178,10 @@ export class ShopifyStoreController {
         shopDomain,
       },
     }).finish();
+
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", undefined);
+    });
 
     if (!shopDomain) {
       console.error("No shop domain in header");
@@ -174,6 +206,10 @@ export class ShopifyStoreController {
     console.log("Received product delete webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
 
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", shopDomain);
+    });
+
     Sentry.startTransaction({
       op: "Webhook:Received",
       name: "Received product delete webhook",
@@ -182,6 +218,10 @@ export class ShopifyStoreController {
         shopDomain,
       },
     }).finish();
+
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", undefined);
+    });
 
     if (!shopDomain) {
       console.error("No shop domain in header");
@@ -203,6 +243,10 @@ export class ShopifyStoreController {
     console.log("Received collection update webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
 
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", shopDomain);
+    });
+
     Sentry.startTransaction({
       op: "Webhook:Received",
       name: "Received collection update webhook",
@@ -211,6 +255,10 @@ export class ShopifyStoreController {
         shopDomain,
       },
     }).finish();
+
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", undefined);
+    });
 
     if (!shopDomain) {
       console.error("No shop domain in header");
@@ -235,6 +283,10 @@ export class ShopifyStoreController {
     console.log("Received collection delete webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
 
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", shopDomain);
+    });
+
     Sentry.startTransaction({
       op: "Webhook:Received",
       name: "Received collection delete webhook",
@@ -243,6 +295,10 @@ export class ShopifyStoreController {
         shopDomain,
       },
     }).finish();
+
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", undefined);
+    });
 
     if (!shopDomain) {
       console.error("No shop domain in header");
@@ -267,6 +323,10 @@ export class ShopifyStoreController {
     console.log("Received app subscription webhook");
     const shopDomain = req.get("x-shopify-shop-domain");
 
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", shopDomain);
+    });
+
     Sentry.startTransaction({
       op: "Webhook:Received",
       name: "Received subscription update webhook",
@@ -275,6 +335,10 @@ export class ShopifyStoreController {
         shopDomain,
       },
     }).finish();
+
+    Sentry.getCurrentHub().configureScope((scope) => {
+      scope.setTag("user", undefined);
+    });
 
     if (!shopDomain) {
       console.error("No shop domain in header");
